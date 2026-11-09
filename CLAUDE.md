@@ -41,6 +41,8 @@ Key facts about the data source:
 
 ## Constraints
 
+- **Pushes that only change docs must not trigger any fetch on antraege.gruene.de.** The workflow's `push` trigger uses a `paths` allowlist (`antragshelper/**`, `pyproject.toml`, `beobachtet.txt`); README, `docs/`, KONZEPT.md, CLAUDE.md, tests and the workflow itself are excluded. Keep it an allowlist (not `paths-ignore`); `tests/test_zeitplan.py` asserts this.
+- Never probe/enumerate motion IDs; only fetch publicly linked pages.
 - Never extract or persist person names (initiators, supporters, activity log actors, feed authors) and never pull motion text; tests assert this (`"Muster" not in repr(...)`).
 - Test fixtures in `tests/fixtures/` are hand-written, anonymized imitations of the real markup. Do not commit real downloaded pages (they contain names).
 - License GPL-3.0; dependencies must be compatible.
