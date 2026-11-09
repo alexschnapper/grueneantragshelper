@@ -1,6 +1,7 @@
 {% extends "base.html" %}
-{% from "_quorum.html" import bar, summary %}
+{% from "_quorum.html" import ampel, bar, summary %}
 {% block title %}{{ entry.prefix if entry else 'Auswertung' }}{% endblock %}
+{% block head %}{% if mobilisierung %}<script src="{{ href('static', path='kopieren.js') }}" defer></script>{% endif %}{% endblock %}
 {% block content %}
 <section>
   <p class="kind">{{ 'Änderungsantrag' if detail.kind == 'amendment' else 'Antrag' }}{% if entry %} · {{ entry.agenda_item }}{% endif %}</p>
@@ -39,10 +40,54 @@
     </table>
     <p class="result">Noch {{ summary(q) }}.
       {% if q.min_women is not none %}Nur noch <strong>{{ q.open_any_gender }}</strong> Plätze können von Personen beliebigen Geschlechts besetzt werden.{% endif %}</p>
+
+    {% if trend %}{% set m = trend.massgeblich %}
+    <h3>Trend bis zur Frist</h3>
+    <p>Status: {{ ampel(trend) }}
+      {% if trend.frist %}<small class="hint">Frist {{ trend.frist.strftime('%d.%m.%Y, %H:%M') }} Uhr ({{ restzeit_text(m.restzeit) }})</small>{% endif %}</p>
+    {% if trend.empfehlung %}<p class="result">{{ trend.empfehlung }}</p>{% endif %}
+    <table class="quorum">
+      <thead><tr><th></th><th class="num">Tempo pro Stunde</th><th class="num">Prognose zur Frist</th><th class="num">ab jetzt nötig pro Stunde</th></tr></thead>
+      <tbody>
+      {% for label, h in [('Gesamt', trend.gesamt), ('Frauen', trend.frauen)] if h %}
+        <tr><th>{{ label }}</th><td class="num">{{ zahl(h.tempo) }}</td>
+          <td class="num">{{ '%.0f'|format(h.prognose) if h.prognose is not none and h.belastbar else '–' }} / {{ h.minimum }}</td>
+          <td class="num">{{ zahl(h.noetige_rate) }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <p class="hint">Reine Hochrechnung: aktueller Stand + Tempo × verbleibende Stunden. Grün ab 110 % des Quorums,
+      Gelb ab 90 %, darunter Rot (bezogen auf das Frauenquorum, falls es eines gibt). Rot auch, wenn das Gesamtquorum
+      bei diesem Tempo nicht erreicht wird. Die Ampel gibt es erst ab 12 Stunden Verlauf (oder so viel, wie bis zur Frist bleibt),
+      vorher wird keine Prognose angezeigt.
+      {% if trend.tempo is none and static %}Für das Tempo braucht es mindestens eine Stunde Verlauf – die Seite
+        prüft beobachtete Anträge stündlich.
+      {% elif trend.tempo is none %}Für das Tempo braucht es mindestens eine Stunde lokal gespeicherten Verlauf –
+        lade die Seite später noch einmal (Stände werden nur beim Aufruf abgerufen).
+      {% elif trend.tempo.seit_beginn %}Tempo seit Beginn der Beobachtung ({{ '%.0f'|format(trend.tempo.stunden) }} Std.).
+      {% else %}Tempo der letzten {{ '%.0f'|format(trend.tempo.stunden) }} Stunden.{% endif %}
+      {% if not trend.frist %}Ohne Frist keine Prognose: Für „{{ settings.consultation }}“ ist kein Antragsschluss
+        hinterlegt (<code>FRISTEN</code> in <code>antragshelper/config.py</code>).{% endif %}</p>
+    {% endif %}
+
+    {% if mobilisierung %}
+    <h3>Mobilisierungs-Text</h3>
+    <textarea id="mobilisierung" class="snippet" rows="4" aria-label="Mobilisierungs-Text">{{ mobilisierung }}</textarea>
+    <p><button type="button" data-copy="mobilisierung">In die Zwischenablage kopieren</button>
+      <small class="hint">Für Signal, WhatsApp oder Mail – vor dem Senden anpassbar.</small></p>
+    {% endif %}
+
+    {% if aufruf_frauen %}
+    <h3>Aufruf an Frauennetzwerke</h3>
+    <textarea id="aufruf-frauen" class="snippet" rows="3" aria-label="Aufruf an Frauennetzwerke">{{ aufruf_frauen }}</textarea>
+    <p><button type="button" data-copy="aufruf-frauen">In die Zwischenablage kopieren</button>
+      <small class="hint">Nennt nur die fehlenden Frauen – Anrede (z. B. LAG Frauenpolitik, Frauenrat) vor dem Senden ergänzen.</small></p>
+    {% endif %}
   {% endif %}
 
   {% if static %}
-  <p class="static-note">Beobachten und Verlauf gibt es nur in der lokal ausgeführten App (siehe GitHub).</p>
+  <p class="static-note">{% if trend %}Trend aus den stündlichen Prüfungen, Stand dieser Seite siehe unten.
+    {% endif %}Beobachten gibt es nur in der lokal ausgeführten App (siehe GitHub) oder über <code>beobachtet.txt</code>.</p>
   {% else %}
   <form method="post" action="/beobachten">
     <input type="hidden" name="url" value="{{ detail.url }}">

@@ -4,7 +4,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from typing import AbstractSet, Callable, List, Optional, Sequence
 
-from . import charts, dashboard, stand, zeitplan
+from . import charts, dashboard, stand, trend, zeitplan
 from .client import FetchRecord
 from .models import (ActivityEntry, ConsultationIndex, Detail, IndexEntry, active_first, agenda_label,
                      group_activity)
@@ -23,12 +23,29 @@ def is_without_quorum(detail: Detail, entry: Optional[IndexEntry], min_total: Op
 STATES = {"aktiv": False, "zurueckgezogen": True}
 
 
-def overview(index: ConsultationIndex, watched: List[WatchedItem]) -> dict:
+def overview(index: ConsultationIndex, watched: List[WatchedItem], trends: Optional[dict] = None) -> dict:
+    """`trends`: URL -> Trend der beobachteten Anträge in der Sammelphase (Frühwarnungen daraus)."""
+    trends = trends or {}
+    needs_support = Antragshelper.needs_support(watched)
     return {
         "index": index,
         "per_agenda": index.by_agenda_item(),
-        "needs_support": Antragshelper.needs_support(watched),
+        "needs_support": needs_support,
         "watched": watched,
+        "trends": trends,
+        "warnings": [(i, trends[i.url]) for i in needs_support if trends.get(i.url) and trends[i.url].warnung],
+    }
+
+
+def trend_context(helper: Antragshelper, detail: Detail) -> dict:
+    """Hochrechnung und Mobilisierungs-Text für die Auswertungsseite (nur lokale App)."""
+    t = helper.hochrechnung(detail)
+    return {
+        "trend": t,
+        "mobilisierung": trend.mobilisierung(detail.title, detail.url, detail.kind, t) if t else None,
+        "aufruf_frauen": trend.aufruf_frauen(detail.title, detail.url, detail.kind, t) if t else None,
+        "zahl": trend.zahl,
+        "restzeit_text": trend.restzeit_text,
     }
 
 

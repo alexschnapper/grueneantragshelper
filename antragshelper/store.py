@@ -94,6 +94,15 @@ class Store:
                 (detail.url, _now(), *row),
             )
 
+    def import_snapshot(self, url: str, row: dict) -> None:
+        """Übernimmt einen Stand aus einem früheren Build (statischer Export, ohne Abruf)."""
+        self._write(
+            "INSERT INTO snapshots (url, fetched_at, status, min_total, min_women,"
+            " current_total, current_women, reached) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (url, row["fetched_at"], row.get("status"), row.get("min_total"), row.get("min_women"),
+             row.get("current_total"), row.get("current_women"), int(row.get("reached") or 0)),
+        )
+
     def latest(self, url: str) -> Optional[sqlite3.Row]:
         rows = self._read("SELECT * FROM snapshots WHERE url = ? ORDER BY id DESC LIMIT 1", (url,))
         return rows[0] if rows else None

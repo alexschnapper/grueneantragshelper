@@ -27,10 +27,49 @@ STATS_MAX_AGE = timedelta(days=7)
 # So viele Läufe bleiben für die Transparenzseite in stand.json erhalten
 MAX_RUNS = 200
 CHECK_PURPOSE = "Prüfung auf Änderungen (vorheriger Schritt)"
+# So viele gespeicherte Stände je beobachtetem Antrag bleiben in stand.json (nur bei Änderungen)
+MAX_VERLAUF = 500
+_SNAPSHOT_FIELDS = ("fetched_at", "status", "min_total", "min_women", "current_total", "current_women", "reached")
+
+
+def import_history(helper: Antragshelper, previous: Optional[Dict], watch_urls: List[str]) -> None:
+    """Verlauf beobachteter Anträge aus dem früheren Stand in den (temporären) Speicher – ohne Abruf.
+
+    Muss vor `fingerprint` und `watchlist` laufen, damit Hochrechnung und neue Stände darauf aufbauen.
+    """
+    verlauf = (previous or {}).get("verlauf") or {}
+    for url in watch_urls:
+        for row in verlauf.get(url) or []:
+            if isinstance(row, dict) and row.get("fetched_at"):
+                helper.store.import_snapshot(url, row)
+
+
+def history(helper: Antragshelper, watch_urls: List[str]) -> Dict[str, List[Dict]]:
+    """Verlauf für stand.json (älteste zuerst; nur Zahlen und Status, keine Namen)."""
+    result = {}
+    for url in watch_urls:
+        rows = [{k: r[k] for k in _SNAPSHOT_FIELDS} for r in reversed(helper.store.history(url))]
+        if rows:
+            result[url] = rows[-MAX_VERLAUF:]
+    return result
+
+
+def warnings_since(previous: Optional[Dict], current: Dict[str, Optional[str]], now: datetime) -> Dict[str, Dict]:
+    """Seit wann eine Warnstufe gilt; bleibt bei gleicher Stufe erhalten, damit Feed-Einträge stabil sind."""
+    before = (previous or {}).get("warnungen") or {}
+    result = {}
+    for url, stufe in current.items():
+        if not stufe:
+            continue
+        old = before.get(url)
+        same = isinstance(old, dict) and old.get("stufe") == stufe and old.get("seit")
+        result[url] = {"stufe": stufe, "seit": old["seit"] if same else now.isoformat(timespec="seconds")}
+    return result
 
 
 def fingerprint(helper: Antragshelper, watch_urls: List[str]) -> Dict:
-    """Ändert sich, sobald etwas veröffentlicht wird oder sich ein beobachteter Stand ändert."""
+    """Ändert sich, sobald etwas veröffentlicht wird, sich ein beobachteter Stand ändert oder dessen
+    Ampel bzw. Warnstufe umspringt (z. B. weil das Tempo mit der Zeit nicht mehr reicht)."""
     url = f"{helper.settings.consultation_url}/activitylog?page=0"
     entries = parse_activitylog(
         helper.client.get(url, helper.settings.ttl_index, "Prüfung auf Änderungen (Aktivitäts-Protokoll)"),
@@ -41,8 +80,11 @@ def fingerprint(helper: Antragshelper, watch_urls: List[str]) -> Dict:
     ).hexdigest()
     watched = {}
     for watch_url in watch_urls:
-        q = helper.detail(watch_url, "Prüfung auf Änderungen (beobachteter Antrag)").quorum
-        watched[watch_url] = [q.current_total, q.current_women, q.reached] if q else None
+        detail = helper.detail(watch_url, "Prüfung auf Änderungen (beobachteter Antrag)")
+        q, t = detail.quorum, helper.hochrechnung(detail)
+        watched[watch_url] = [
+            q.current_total, q.current_women, q.reached, t.ampel if t else None, t.warnstufe if t else None,
+        ] if q else None
     return {"aktivitaet": activity, "beobachtet": watched}
 
 
@@ -115,7 +157,7 @@ def runs(previous: Optional[Dict], current: Dict) -> List[Dict]:
 
 
 def dump(fp: Dict, helper: Antragshelper, built_at: datetime, all_runs: List[Dict],
-         requests: List[Dict]) -> str:
+         requests: List[Dict], verlauf: Optional[Dict] = None, warnungen: Optional[Dict] = None) -> str:
     stats = {
         r["url"]: {"supporter_count": r["supporter_count"], "women_share": r["women_share"], "fetched_at": r["fetched_at"]}
         for r in helper.store.published_stats()
@@ -128,6 +170,8 @@ def dump(fp: Dict, helper: Antragshelper, built_at: datetime, all_runs: List[Dic
             "stats": stats,
             "laeufe": all_runs,
             "abrufe_letzter_lauf": requests,
+            "verlauf": verlauf or {},
+            "warnungen": warnungen or {},
         },
         ensure_ascii=False,
     )

@@ -119,3 +119,71 @@ def test_without_quorum_marked_in_build(tmp_path, fake_site):
     assert "ohne Quorum eingereicht" in pages_text["dashboard.html"]
     assert "ohne Quorum eingereicht" in pages_text["alle_alle_alle.html"]
     assert "ohne Quorum eingereicht" not in pages_text["wasser-antrag-1.html"]
+
+
+COLLECTING = f"{BASE}/52bdk/wasser-antrag-1/999"
+
+
+def _warn_settings(tmp_path):
+    from antragshelper.config import Fristen
+
+    frist = datetime.now().replace(microsecond=0) + timedelta(hours=30)
+    return Settings(db_path=tmp_path / "x.sqlite3", fristen=Fristen(frist, frist))
+
+
+def test_verlauf_und_warnungen_im_statischen_export(tmp_path, fake_site):
+    import xml.etree.ElementTree as ET
+
+    pages, _ = fake_site
+    pages[COLLECTING] = (FIXTURES / "amendment_collecting.html").read_text(encoding="utf-8")
+    settings = _warn_settings(tmp_path)
+
+    build.build_site(tmp_path / "a", settings, watch_urls=[COLLECTING])
+    first = json.loads((tmp_path / "a" / "static" / "stand.json").read_text(encoding="utf-8"))
+    [row] = first["verlauf"][COLLECTING]
+    assert (row["current_total"], row["current_women"], row["min_women"]) == (52, 19, 46)
+    # 30 Stunden bis Fristende, noch kein belastbares Tempo -> Warnstufe "frist"
+    assert first["warnungen"][COLLECTING]["stufe"] == "frist"
+    assert first["fingerprint"]["beobachtet"][COLLECTING] == [52, 19, False, None, "frist"]
+    assert "Muster" not in json.dumps(first)
+
+    feed = (tmp_path / "a" / "warnungen.xml").read_text(encoding="utf-8")
+    ns = {"a": "http://www.w3.org/2005/Atom"}
+    [entry] = ET.fromstring(feed).findall("a:entry", ns)
+    assert entry.find("a:title", ns).text.startswith("Frist läuft ab: Änderungsantrag zu VR-01")
+    assert entry.find("a:link", ns).get("href").endswith("/antrag/wasser-antrag-1--999.html")
+    assert "noch 27 Frauen nötig" in entry.find("a:summary", ns).text
+    assert "Muster" not in feed
+
+    index = (tmp_path / "a" / "index.html").read_text(encoding="utf-8")
+    assert "Frühwarnungen" in index and "warnungen.xml" in index
+    detail = (tmp_path / "a" / "antrag" / "wasser-antrag-1--999.html").read_text(encoding="utf-8")
+    assert "Trend bis zur Frist" in detail and 'data-copy="aufruf-frauen"' in detail
+
+    # Zweiter Lauf: Verlauf wird übernommen (gleicher Stand, kein neuer Eintrag), Warnung behält ihren Beginn
+    build.build_site(tmp_path / "b", settings, watch_urls=[COLLECTING], previous=first)
+    second = json.loads((tmp_path / "b" / "static" / "stand.json").read_text(encoding="utf-8"))
+    assert second["verlauf"] == first["verlauf"]
+    assert second["warnungen"] == first["warnungen"]
+
+
+def test_check_baut_neu_wenn_ampel_umspringt(tmp_path, fake_site, monkeypatch, capsys):
+    pages, requested = fake_site
+    pages[COLLECTING] = (FIXTURES / "amendment_collecting.html").read_text(encoding="utf-8")
+    monkeypatch.setattr("antragshelper.__main__.settings", _warn_settings(tmp_path))
+    watch_file = tmp_path / "beobachtet.txt"
+    watch_file.write_text(COLLECTING + "\n", encoding="utf-8")
+    build.build_site(tmp_path / "site", _warn_settings(tmp_path), watch_urls=[COLLECTING])
+    stand_file = tmp_path / "site" / "static" / "stand.json"
+
+    requested.clear()
+    assert _check(str(stand_file), watch_file) == 0
+    assert "changed=false" in capsys.readouterr().out
+    assert requested == [f"{BASE}/52bdk/activitylog?page=0", COLLECTING]  # keine zusätzlichen Abrufe
+
+    # 13 Stunden später ohne neue Mitantragsteller*innen: Tempo 0 ist jetzt belastbar -> Rot
+    data = json.loads(stand_file.read_text(encoding="utf-8"))
+    data["verlauf"][COLLECTING][0]["fetched_at"] = (datetime.now() - timedelta(hours=13)).isoformat(timespec="seconds")
+    stand_file.write_text(json.dumps(data), encoding="utf-8")
+    assert _check(str(stand_file), watch_file) == 0
+    assert "changed=true (Stand oder Trend eines beobachteten Antrags geändert" in capsys.readouterr().out

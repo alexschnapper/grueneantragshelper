@@ -2,7 +2,34 @@ from __future__ import annotations
 
 import os
 from dataclasses import dataclass, field
+from datetime import datetime
 from pathlib import Path
+from typing import Dict, Optional
+
+
+@dataclass(frozen=True)
+class Fristen:
+    """Antragsschluss einer Konferenz (lokale Zeit). Änderungsanträge haben meist eine spätere Frist."""
+
+    antraege: Optional[datetime] = None
+    aenderungsantraege: Optional[datetime] = None
+
+    def fuer(self, kind: str) -> Optional[datetime]:
+        if kind == "amendment" and self.aenderungsantraege:
+            return self.aenderungsantraege
+        return self.antraege
+
+
+# Fristen je Konferenz-Pfad (`ANTRAGSHELPER_CONSULTATION`) für die Hochrechnung. Sie stehen auf der
+# Startseite nur als Freitext und werden deshalb hier gepflegt. Für weitere Parteitage, LDKs oder
+# Kreismitgliederversammlungen einen Eintrag ergänzen; ohne Eintrag gibt es keine Prognose.
+FRISTEN: Dict[str, Fristen] = {
+    # https://antraege.gruene.de/52bdk – Dringlichkeitsanträge (20.11., 03.12.) sind nicht abgebildet
+    "52bdk": Fristen(
+        antraege=datetime(2026, 10, 9, 11, 59),
+        aenderungsantraege=datetime(2026, 11, 13, 11, 59),
+    ),
+}
 
 
 @dataclass(frozen=True)
@@ -11,14 +38,22 @@ class Settings:
     consultation: str = field(default_factory=lambda: os.environ.get("ANTRAGSHELPER_CONSULTATION", "52bdk"))
     db_path: Path = field(default_factory=lambda: Path(os.environ.get("ANTRAGSHELPER_DB", "data/antragshelper.sqlite3")))
     repo_url: str = "https://github.com/alexschnapper/grueneantragshelper"
+    # Adresse der GitHub-Pages-Seite, für absolute Links im Feed `warnungen.xml`
+    site_url: str = field(default_factory=lambda: os.environ.get(
+        "ANTRAGSHELPER_SITE_URL", "https://alexschnapper.github.io/grueneantragshelper").rstrip("/"))
     user_agent: str = "grueneantragshelper/0.1 (+https://github.com/alexschnapper/grueneantragshelper)"
     # Cache-Dauer in Sekunden, damit Neuladen keine Last auf antraege.gruene.de erzeugt
     ttl_index: int = 300
     ttl_detail: int = 120
+    # Abweichende Fristen (z. B. in Tests); sonst gilt der Eintrag aus FRISTEN
+    fristen: Optional[Fristen] = None
 
     @property
     def consultation_url(self) -> str:
         return f"{self.base_url}/{self.consultation}"
+
+    def frist_fuer(self, kind: str) -> Optional[datetime]:
+        return (self.fristen or FRISTEN.get(self.consultation, Fristen())).fuer(kind)
 
 
 settings = Settings()
