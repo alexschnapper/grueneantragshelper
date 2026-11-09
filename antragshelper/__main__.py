@@ -112,14 +112,22 @@ def main() -> int:
     if args.cmd == "check":
         return _check(args.vorher, args.beobachten)
     if args.cmd == "build":
-        from . import stand
+        import os
+
+        from . import benachrichtigung, stand
         from .build import build_site, read_watch_file
 
         watch_urls = read_watch_file(args.beobachten) if args.beobachten else []
         try:
+            webhooks = benachrichtigung.parse(os.environ.get("ANTRAGSHELPER_WEBHOOKS", ""))
+        except ValueError as e:
+            # Kaputte Konfiguration soll den Build nicht verhindern
+            print(f"{e} – Benachrichtigungen abgeschaltet.", file=sys.stderr)
+            webhooks = []
+        try:
             pages = build_site(args.out, settings, details=args.details, watch_urls=watch_urls,
                                previous=stand.load(args.vorher), anlass=args.anlass,
-                               check_requests=args.pruef_abrufe)
+                               check_requests=args.pruef_abrufe, webhooks=webhooks)
         except SourceError as e:
             print(e, file=sys.stderr)
             return 2

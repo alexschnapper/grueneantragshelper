@@ -16,7 +16,7 @@ from typing import Dict, List, Optional
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from . import dashboard, stand, trend, views
+from . import benachrichtigung, dashboard, stand, trend, views
 from .config import Settings
 from .links import Links, detail_page, list_page
 from .models import ConsultationIndex, Detail, IndexEntry, normalize_prefix
@@ -69,6 +69,7 @@ def warning_entries(watched: List[WatchedItem], trends: Dict[str, Optional[trend
         if t is None or w is None:
             continue
         entries.append({
+            "url": item.url,
             "id": f"{item.url}#warnung-{w['stufe']}-{w['seit']}",
             "titel": f"{trend.WARNSTUFEN[w['stufe']]}: {item.detail.title}",
             "link": f"{site_url}/{detail_page(item.url)}",
@@ -79,11 +80,13 @@ def warning_entries(watched: List[WatchedItem], trends: Dict[str, Optional[trend
 
 
 def build_site(out: Path, settings: Settings, details: bool = False, watch_urls: Optional[List[str]] = None,
-               previous: Optional[Dict] = None, anlass: str = "Lokaler Build", check_requests: int = 0) -> int:
+               previous: Optional[Dict] = None, anlass: str = "Lokaler Build", check_requests: int = 0,
+               webhooks: Optional[List[benachrichtigung.Webhook]] = None) -> int:
     """Schreibt die Seite nach `out` und gibt die Zahl der erzeugten HTML-Seiten zurück.
 
     Mit `previous` (früherer `stand.json`) werden nur neue oder veraltete Mitglieder-Anträge abgerufen.
     `anlass` und `check_requests` (Abrufe der vorgeschalteten Prüfung) landen im Laufprotokoll.
+    `webhooks` erhalten neue Frühwarnungen (siehe `benachrichtigung.py`).
     """
     started = datetime.now(_TZ)
     with tempfile.TemporaryDirectory() as tmp:
@@ -109,8 +112,17 @@ def build_site(out: Path, settings: Settings, details: bool = False, watch_urls:
 
         built_at = datetime.now(_TZ)
         warnungen = stand.warnings_since(previous, {u: t.warnstufe for u, t in trends.items() if t}, built_at)
+        entries = warning_entries(watched, trends, warnungen, settings.site_url)
+        # Nur neue Warnungen melden; ohne früheren Stand wäre jede Warnung „neu“ (doppelte Meldungen)
+        vorher = (previous or {}).get("warnungen") or {}
+        neu = [e for e in entries if vorher.get(e["url"]) != warnungen[e["url"]]] if previous else []
+        gesendet, fehlgeschlagen = benachrichtigung.senden(
+            webhooks or [], [(f"Frühwarnung – {e['titel']}", f"{e['text']}\n{e['link']}") for e in neu],
+            settings.user_agent)
         # Ab hier keine Abrufe mehr: Laufprotokoll für Transparenzseite und Footer
         record = stand.run_record(anlass, started, built_at, helper.client.log, check_requests)
+        if webhooks:
+            record["benachrichtigungen"] = {"gesendet": gesendet, "fehlgeschlagen": fehlgeschlagen}
         all_runs = stand.runs(previous, record)
         requests = stand.request_rows(helper.client.log, _TZ)
         footer = views.footer_static(record, built_at)
@@ -134,8 +146,7 @@ def build_site(out: Path, settings: Settings, details: bool = False, watch_urls:
         out.mkdir(parents=True)
 
         render("index.html", "index.html", **views.overview(index, watched, trends))
-        render("warnungen.xml", "warnungen.xml", updated=built_at.isoformat(timespec="seconds"),
-               eintraege=warning_entries(watched, trends, warnungen, settings.site_url))
+        render("warnungen.xml", "warnungen.xml", updated=built_at.isoformat(timespec="seconds"), eintraege=entries)
         render("dashboard.html", "dashboard.html",
                **views.dashboard_page(helper, index, activity_entries, watched, Links(True, "", known)))
         render("activity.html", "aktivitaet.html", **views.activity(activity_entries, MAX_ACTIVITY_PAGES))

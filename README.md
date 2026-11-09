@@ -124,6 +124,37 @@ zusätzliche Abrufe. Frühwarnungen gibt es als **Atom-Feed** unter `warnungen.x
 Anmeldung und ohne Daten über Abonnent*innen. Eine Warnung erscheint dort als neuer Eintrag, sobald ein Antrag
 eine neue Warnstufe erreicht.
 
+### Benachrichtigungen an Messenger (optional)
+
+Neue Frühwarnungen kann der Build zusätzlich an Messenger schicken – einmal pro neuer Warnstufe, nicht
+stündlich. Die Ziele stehen im GitHub-Secret **`ANTRAGSHELPER_WEBHOOKS`** (Settings → Secrets and variables →
+Actions), nie im Repo, denn Webhook-URLs sind Zugangsdaten. Eine Zeile pro Ziel:
+
+```text
+json https://chatbegruenung.de/hooks/<id>/<token>
+ntfy https://ntfy.sh/<geheimes-thema>
+get <URL aus der CallMeBot-Anleitung für WhatsApp bzw. Signal, mit phone=…&apikey=…, ohne text=>
+get https://api.telegram.org/bot<token>/sendMessage?chat_id=<chat-id>
+signal-cli https://<dein-server>/v2/send?number=%2B49…&recipients=group.<id>
+discord https://discord.com/api/webhooks/<id>/<token>
+```
+
+| Art | Wofür |
+|---|---|
+| `json` | Incoming Webhook von Chatbegrünung/Rocket.Chat, Mattermost oder Slack (`{"text": …}`) |
+| `ntfy` | Push-Nachricht aufs Handy über die ntfy-App; das Thema ist das Geheimnis |
+| `get` | Hängt `text=…` an: CallMeBot (WhatsApp oder Signal **an die eigene Nummer**), Telegram-Bot |
+| `signal-cli` | [signal-cli-rest-api](https://github.com/bbernhard/signal-cli-rest-api) auf eigenem Server – auch an **Signal-Gruppen** |
+| `discord` | Discord-Webhook (`{"content": …}`) |
+
+WhatsApp und Signal haben keine offiziellen Webhooks für Gruppen: In eine Signal-Gruppe kommt man nur über
+einen eigenen signal-cli-Server mit eigener Nummer, in WhatsApp-Gruppen gar nicht (dann z. B. ntfy oder
+CallMeBot an die eigene Nummer und von Hand weiterleiten). Die Nachricht enthält nur, was auch auf der
+Pages-Seite steht (Titel, Zahlen, Warnung, Link) und geht an den jeweiligen Dienst. Fehlerhafte Zeilen oder
+nicht erreichbare Ziele brechen den Build nicht ab; das Laufprotokoll in `stand.json` zählt gesendete und
+fehlgeschlagene Meldungen (ohne URLs). Ohne früheren Stand (`--vorher`) wird nichts gesendet, damit nach einem
+verlorenen Stand nicht alle Warnungen erneut kommen.
+
 Einmalig einrichten: **Settings → Pages → Build and deployment → Source: „GitHub Actions“**.
 
 Anträge in der Sammelphase können in [`beobachtet.txt`](beobachtet.txt) eingetragen werden. Die Datei ist

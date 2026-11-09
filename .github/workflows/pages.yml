@@ -94,6 +94,8 @@ jobs:
         env:
           ANLASS: ${{ needs.check.outputs.anlass }}
           ABRUFE: ${{ needs.check.outputs.abrufe }}
+          # Ziele für neue Frühwarnungen (Signal, WhatsApp, Chatbegrünung …), siehe README; nie ins Repo
+          ANTRAGSHELPER_WEBHOOKS: ${{ secrets.ANTRAGSHELPER_WEBHOOKS }}
         run: |
           set -- --out _site --details --vorher "$STAND_URL" --anlass "$ANLASS" --pruef-abrufe "${ABRUFE:-0}"
           if [ -f beobachtet.txt ]; then set -- "$@" --beobachten beobachtet.txt; fi
