@@ -107,32 +107,52 @@
   {% endif %}
 
   {% if dash.quorum_points %}
-    {% set met = dash.quorum_points|selectattr('meets')|list %}
+    {% set points = dash.with_quorum %}
+    {% set met = points|selectattr('meets')|list %}
     <div class="tiles">
-      <div class="tile"><span>{{ met|length }} / {{ dash.quorum_points|length }}</span>erfüllen beide Quoren (geschätzt)</div>
-      <div class="tile"><span>{{ '%g'|format(dash.supporters_median) }}</span>Median Mitantragsteller*innen</div>
-      <div class="tile"><span>{{ '%+d'|format(dash.quorum_points[0].buffer) }}</span>knappster Puffer ({{ dash.quorum_points[0].prefix }})</div>
+      <div class="tile"><span>{{ met|length }} / {{ points|length }}</span>erfüllen beide Quoren (geschätzt)</div>
+      <div class="tile"><span>{{ '%g'|format(dash.supporters_median) if dash.supporters_median is not none else '–' }}</span>Median Mitantragsteller*innen</div>
+      {% if points %}<div class="tile"><span>{{ '%+d'|format(points[0].buffer) }}</span>knappster Puffer ({{ points[0].prefix }})</div>{% endif %}
+      {% if dash.without_quorum %}<a class="tile" href="#ohne-quorum"><span>{{ dash.without_quorum|length }}</span>ohne Quorum eingereicht<small>nicht in Diagramm und Puffer</small></a>{% endif %}
     </div>
+    {% if scatter %}
     {{ legend(['Anträge', 'Änderungsanträge'], ['s1', 's2']) }}
     {{ scatter }}
     <p class="hint">Punkte im grünen Bereich erfüllen beide Quoren. Punkt anklicken für die Auswertung.</p>
+    {% endif %}
 
     <h3>Am knappsten</h3>
     <table>
       <thead><tr><th>Kürzel</th><th class="num">Mitantrag&shy;steller*innen</th><th class="num">Frauen ~</th><th class="num">Puffer gesamt</th><th class="num">Puffer Frauen</th></tr></thead>
       <tbody>
-      {% for p in dash.quorum_points[:10] %}
+      {% for p in points[:10] %}
         <tr><td><a href="{{ href('auswertung', url=p.url) }}">{{ p.prefix }}</a></td><td class="num">{{ p.supporters }}</td>
           <td class="num">{{ p.women }} ({{ p.women_share }} %)</td><td class="num">{{ '%+d'|format(p.buffer_total) }}</td><td class="num">{{ '%+d'|format(p.buffer_women) }}</td></tr>
       {% endfor %}
       </tbody>
     </table>
-    <details class="tableview"><summary>Alle {{ dash.quorum_points|length }} als Tabelle</summary>
-      <table><tbody>{% for p in dash.quorum_points %}
+    <details class="tableview"><summary>Alle {{ points|length }} als Tabelle</summary>
+      <table><tbody>{% for p in points %}
         <tr><td><a href="{{ href('auswertung', url=p.url) }}">{{ p.prefix }}</a></td><td class="num">{{ p.supporters }}</td><td class="num">{{ p.women }} ({{ p.women_share }} %)</td>
           <td class="num">{{ '%+d'|format(p.buffer_total) }}</td><td class="num">{{ '%+d'|format(p.buffer_women) }}</td></tr>
       {% endfor %}</tbody></table>
     </details>
+
+    {% if dash.without_quorum %}
+    <h3 id="ohne-quorum">Ohne Quorum eingereicht ({{ dash.without_quorum|length }})</h3>
+    <p class="hint">Veröffentlicht, aber mit weniger als {{ index.min_total }} Mitantragsteller*innen – laut
+      antraege.gruene.de z. B. „und 0 weitere Antragsteller*innen“. Der Grund (etwa ein anderes Antragsrecht)
+      ist dort nicht angegeben. Diese Einträge fließen nicht in Diagramm und Puffer ein.</p>
+    <table>
+      <thead><tr><th>Kürzel</th><th class="num">Mitantrag&shy;steller*innen</th><th class="num">Frauenanteil</th></tr></thead>
+      <tbody>
+      {% for p in dash.without_quorum %}
+        <tr><td><a href="{{ href('auswertung', url=p.url) }}">{{ p.prefix }}</a> <span class="status status-noquorum">ohne Quorum eingereicht</span></td>
+          <td class="num">{{ p.supporters }}</td><td class="num">{{ p.women_share }} %</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
   {% elif not refresh.running and not static %}
     <p>Noch keine Daten. Der Abruf lädt die Einzelseiten aller veröffentlichten Mitglieder-Anträge
       ({{ dash.counts.motions_members + dash.counts.amendments_members }} Seiten, langsam mit 1 Seite pro Sekunde).</p>

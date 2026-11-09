@@ -9,7 +9,7 @@
     <tr class="{{ 'withdrawn' if e.withdrawn }}" data-filter="{{ (e.prefix ~ ' ' ~ e.title)|lower }}">
       <td><a href="{{ href('auswertung', url=e.url) }}">{{ e.prefix }}</a></td>
       <td>{{ e.title }}</td>
-      <td><span class="status {{ 'status-withdrawn' if e.withdrawn else 'status-ok' }}">{{ e.status }}</span></td>
+      <td><span class="status {{ 'status-withdrawn' if e.withdrawn else 'status-ok' }}">{{ e.status }}</span>{% if e.url in without_quorum %} <span class="status status-noquorum">ohne Quorum eingereicht</span>{% endif %}</td>
       {% if not f.top %}<td>{{ e.agenda_item }}</td>{% endif %}
       <td class="num">{{ e.women_share ~ ' %' if e.women_share is not none else '–' }}</td>
     </tr>
@@ -74,7 +74,7 @@
         {% for e in g.entries %}
           <tr class="{{ 'withdrawn' if e.withdrawn }}">
             <td><a href="{{ href('auswertung', url=e.url) }}">{{ e.prefix }}</a>{% if not g.motion %} {{ e.title }}{% endif %}</td>
-            <td><span class="status {{ 'status-withdrawn' if e.withdrawn else 'status-ok' }}">{{ e.status }}</span></td>
+            <td><span class="status {{ 'status-withdrawn' if e.withdrawn else 'status-ok' }}">{{ e.status }}</span>{% if e.url in without_quorum %} <span class="status status-noquorum">ohne Quorum eingereicht</span>{% endif %}</td>
             <td class="num">{{ 'Frauenanteil ' ~ e.women_share ~ ' %' if e.women_share is not none else '' }}</td>
           </tr>
         {% endfor %}

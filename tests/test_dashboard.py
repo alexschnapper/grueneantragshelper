@@ -46,3 +46,20 @@ def test_build_dashboard():
     assert [r.values for r in dash.activity_days] == [[1, 0], [0, 0], [0, 1]]
     assert dash.most_amended[0].label == "VR-02" and dash.most_amended[0].values == [1, 1]
     assert [p.prefix for p in dash.quorum_points] == ["VR-02-284"]
+
+
+def test_without_quorum_split():
+    index = parse_index((FIXTURES / "home.html").read_text(encoding="utf-8"), BASE)
+    index.min_total, index.min_women = 91, 46
+    stats = [
+        {"prefix": "VR-02-284", "kind": "amendment", "url": "a", "supporter_count": 102, "women_share": 56},
+        {"prefix": "X-1", "kind": "amendment", "url": "b", "supporter_count": 0, "women_share": 100},
+    ]
+    dash = build(index, [], stats, today=date(2026, 11, 9))
+    assert [p.prefix for p in dash.with_quorum] == ["VR-02-284"]
+    assert [p.prefix for p in dash.without_quorum] == ["X-1"]
+    assert dash.supporters_median == 102  # ohne die Einträge ohne Quorum
+
+    from antragshelper.dashboard import without_quorum_urls
+    assert without_quorum_urls(stats, 91) == {"b"}
+    assert without_quorum_urls(stats, None) == set()

@@ -2,14 +2,24 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
-from typing import Callable, List, Sequence
+from typing import AbstractSet, Callable, List, Optional, Sequence
 
 from . import charts, dashboard, stand, zeitplan
 from .client import FetchRecord
-from .models import ActivityEntry, ConsultationIndex, active_first, agenda_label, group_activity
+from .models import (ActivityEntry, ConsultationIndex, Detail, IndexEntry, active_first, agenda_label,
+                     group_activity)
 from .service import MAX_ACTIVITY_PAGES, STATS_DELAY_SECONDS, Antragshelper, WatchedItem
 
 KINDS = {"antraege": "motion", "aenderungsantraege": "amendment"}
+
+
+def is_without_quorum(detail: Detail, entry: Optional[IndexEntry], min_total: Optional[int]) -> bool:
+    """Veröffentlichter Mitglieder-Antrag mit weniger Mitantragsteller*innen als das Quorum."""
+    return (
+        entry is not None and entry.submitter == "Mitglieder" and detail.quorum is None
+        and detail.supporter_count is not None and min_total is not None
+        and detail.supporter_count < min_total
+    )
 STATES = {"aktiv": False, "zurueckgezogen": True}
 
 
@@ -22,7 +32,8 @@ def overview(index: ConsultationIndex, watched: List[WatchedItem]) -> dict:
     }
 
 
-def listing(index: ConsultationIndex, art: str = "", top: str = "", stand: str = "", text: str = "") -> dict:
+def listing(index: ConsultationIndex, art: str = "", top: str = "", stand: str = "", text: str = "",
+            without_quorum: AbstractSet[str] = frozenset()) -> dict:
     entries = index.filter(kind=KINDS.get(art), agenda_item=top, withdrawn=STATES.get(stand), text=text)
     heading = {"antraege": "Anträge", "aenderungsantraege": "Änderungsanträge"}.get(art, "Anträge und Änderungsanträge")
     if top:
@@ -35,6 +46,7 @@ def listing(index: ConsultationIndex, art: str = "", top: str = "", stand: str =
         "withdrawn_motions": [e for e in motions if e.withdrawn],
         "amendment_groups": index.group_amendments([e for e in entries if e.kind == "amendment"]),
         "agenda_items": index.agenda_items,
+        "without_quorum": without_quorum,
         "f": {"art": art, "top": top, "stand": stand, "text": text},
     }
 
@@ -64,8 +76,8 @@ def dashboard_page(
 ) -> dict:
     dash = dashboard.build(index, activity_entries, helper.store.published_stats())
     scatter = (
-        charts.quorum_scatter(dash.quorum_points, index.min_total, index.min_women, href)
-        if dash.quorum_points else None
+        charts.quorum_scatter(dash.with_quorum, index.min_total, index.min_women, href)
+        if dash.with_quorum else None
     )
     progress = []
     for item in helper.needs_support(watched):

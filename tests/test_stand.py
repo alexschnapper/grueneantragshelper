@@ -106,3 +106,16 @@ def test_runs_are_logged(tmp_path, fake_site):
     assert "Erster Lauf" in page and "Nächste geplant" in page
     for html_file in (tmp_path / "b").rglob("*.html"):
         assert "Letzter Abruf:" in html_file.read_text(encoding="utf-8"), html_file
+
+
+def test_without_quorum_marked_in_build(tmp_path, fake_site):
+    pages, _ = fake_site
+    pages[MEMBER_AMENDMENT] = (FIXTURES / "amendment_no_quorum.html").read_text(encoding="utf-8")
+    out = tmp_path / "site"
+    build.build_site(out, Settings(db_path=tmp_path / "x.sqlite3"), details=True)
+    pages_text = {p.name: p.read_text(encoding="utf-8") for p in out.rglob("*.html")}
+
+    assert "ohne Quorum eingereicht" in pages_text["chancen-antrag-2--201.html"]
+    assert "ohne Quorum eingereicht" in pages_text["dashboard.html"]
+    assert "ohne Quorum eingereicht" in pages_text["alle_alle_alle.html"]
+    assert "ohne Quorum eingereicht" not in pages_text["wasser-antrag-1.html"]

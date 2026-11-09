@@ -108,3 +108,8 @@ def test_group_amendments():
 
     only_withdrawn = index.group_amendments([index.find("VR-02-300"), index.find("S-01")])
     assert [g.label for g in only_withdrawn][-1] == "VR-02: Chancen"
+
+
+def test_index_consultation_quorum():
+    index = parse_index(read("home.html"), BASE)
+    assert (index.min_total, index.min_women) == (91, 46)

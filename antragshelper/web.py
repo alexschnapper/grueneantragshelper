@@ -10,7 +10,7 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import stand, views
+from . import dashboard, stand, views
 from .client import SourceError
 from .config import settings
 from .links import Links
@@ -62,6 +62,7 @@ def search(request: Request, q: str = ""):
 def evaluation(request: Request, url: str):
     try:
         _, entry = helper.resolve(url)
+        min_total = helper.index().min_total
         detail = helper.detail(url)
         published, collecting = helper.amendments_of(url) if detail.kind == "motion" else ([], [])
     except SourceError as e:
@@ -75,6 +76,8 @@ def evaluation(request: Request, url: str):
         collecting_amendments=collecting,
         history=helper.store.history(url),
         watched=helper.store.is_watched(url),
+        without_quorum=views.is_without_quorum(detail, entry, min_total),
+        min_total=min_total,
     )
 
 
@@ -93,7 +96,8 @@ def listing(request: Request, art: str = "", top: str = "", stand: str = "", tex
         index = helper.index()
     except SourceError as e:
         return _render(request, "error.html", 502, message=str(e))
-    return _render(request, "list.html", **views.listing(index, art, top, stand, text))
+    without_quorum = dashboard.without_quorum_urls(helper.store.published_stats(), index.min_total)
+    return _render(request, "list.html", **views.listing(index, art, top, stand, text, without_quorum))
 
 
 @app.get("/aktivitaet", response_class=HTMLResponse)

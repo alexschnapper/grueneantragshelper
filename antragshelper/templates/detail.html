@@ -9,7 +9,8 @@
     {% if detail.parent_url %} · zu <a href="{{ href('auswertung', url=detail.parent_url) }}">{{ detail.parent_title }}</a>{% endif %}</p>
 
   <dl class="facts">
-    <dt>Status</dt><dd>{{ detail.status or '–' }}{% if entry and entry.withdrawn %} (zurückgezogen){% endif %}</dd>
+    <dt>Status</dt><dd>{{ detail.status or '–' }}{% if entry and entry.withdrawn %} (zurückgezogen){% endif %}
+      {% if without_quorum %}<span class="status status-noquorum">ohne Quorum eingereicht</span>{% endif %}</dd>
     {% if detail.women_share is not none %}<dt>Frauenanteil</dt><dd>{{ detail.women_share }} %</dd>{% endif %}
     {% if detail.supporter_count is not none %}<dt>Mitantragsteller*innen</dt><dd>{{ detail.supporter_count }}</dd>{% endif %}
   </dl>
@@ -18,7 +19,11 @@
 <section>
   <h2>Quorum</h2>
   {% set q = detail.quorum %}
-  {% if q is none %}
+  {% if q is none and without_quorum %}
+    <p><span class="status status-noquorum">ohne Quorum eingereicht</span>
+      Veröffentlicht mit {{ detail.supporter_count }} Mitantragsteller*innen – für Mitglieder-Anträge nötig wären
+      {{ min_total }}. Der Grund (etwa ein anderes Antragsrecht) ist auf antraege.gruene.de nicht angegeben.</p>
+  {% elif q is none %}
     <p>Keine Sammelphase: Der Antrag ist eingereicht oder wurde von einem Gremium gestellt.</p>
   {% elif q.reached %}
     <p>{{ summary(q) }} – jetzt muss nur noch die Antragsteller*in die Einreichung bestätigen.</p>
