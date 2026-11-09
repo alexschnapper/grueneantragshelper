@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% from "_quorum.html" import bar, summary %}
+{% block title %}Übersicht{% endblock %}
+{% block content %}
+<section>
+  <h1>Übersicht</h1>
+  <div class="tiles">
+    <a class="tile" href="{{ href('liste', art='antraege') }}"><span>{{ index.motions|length }}</span>Anträge</a>
+    <a class="tile" href="{{ href('liste', art='aenderungsantraege') }}"><span>{{ index.amendments|length }}</span>Änderungsanträge</a>
+    <a class="tile" href="{{ href('liste', stand='zurueckgezogen') }}"><span>{{ index.entries|selectattr('withdrawn')|list|length }}</span>zurückgezogen</a>
+    <a class="tile" href="#unterstuetzung"><span>{{ needs_support|length }}</span>in Sammelphase (nur beobachtete)</a>
+  </div>
+  <p class="hint">Gezählt werden die veröffentlichten Einträge der Tagesordnung. Anträge in der Sammelphase
+    sind auf antraege.gruene.de nicht öffentlich gelistet – füge sie über ihren Direktlink hinzu.</p>
+</section>
+
+<section>
+  <h2 id="unterstuetzung">Brauchen noch Unterstützung</h2>
+  <div class="notice">
+    <p><strong>Diese Liste ist nicht vollständig – und kann es nicht sein.</strong>
+      Anträge und Änderungsanträge, die noch Unterstützer*innen sammeln, werden auf antraege.gruene.de
+      nicht öffentlich gelistet: nicht in der Tagesordnung, nicht unter dem Hauptantrag, nicht in der Suche,
+      den Feeds oder im Aktivitäts-Protokoll. Antragsgrün blendet den Status „Antragsteller*innen sammeln“
+      für alle ohne Berechtigung aus, und die Sammelseite ist für diese Konferenz abgeschaltet.</p>
+    <p>Die App kann sie deshalb nicht selbst finden. <strong>Eine leere Liste heißt nicht, dass kein Antrag
+      Unterstützung braucht.</strong> Hier erscheinen nur Anträge, deren Direktlink (meist von den
+      Antragsteller*innen verschickt) {% if static %}in die Datei <code>beobachtet.txt</code> im
+      <a href="{{ settings.repo_url }}">GitHub-Repo</a> eingetragen wurde (oder in der lokalen App mit „Beobachten“
+      gespeichert).{% else %}oben ins Suchfeld eingefügt und mit „Beobachten“ gespeichert wurde.{% endif %}</p>
+  </div>
+  {% if needs_support %}
+  <table>
+    <thead><tr><th>Antrag</th><th>Stand</th><th>Frauen</th><th>Es fehlen</th></tr></thead>
+    <tbody>
+    {% for item in needs_support %}{% set q = item.detail.quorum %}
+      <tr>
+        <td><a href="{{ href('auswertung', url=item.url) }}">{{ item.detail.title }}</a></td>
+        <td>{{ q.current_total }} / {{ q.min_total }}{{ bar(q.progress_total, 'gesamt') }}</td>
+        <td>{% if q.min_women is not none %}{{ q.current_women }} / {{ q.min_women }}{{ bar(q.progress_women, 'Frauen') }}{% else %}–{% endif %}</td>
+        <td>{{ summary(q) }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>Noch keine beobachteten Anträge in der Sammelphase.</p>
+  {% endif %}
+</section>
+
+{% if watched %}
+<section>
+  <h2>Beobachtet</h2>
+  <ul>
+  {% for item in watched %}
+    <li><a href="{{ href('auswertung', url=item.url) }}">{{ item.detail.title if item.detail else item.title }}</a>
+      – {% if item.error %}<span class="err">{{ item.error }}</span>{% else %}{{ item.detail.status or '–' }}{% endif %}</li>
+  {% endfor %}
+  </ul>
+</section>
+{% endif %}
+
+<section>
+  <h2>Je Tagesordnungspunkt</h2>
+  <table>
+    <thead><tr><th>Tagesordnungspunkt</th><th class="num">Anträge</th><th class="num">Änderungsanträge</th><th class="num">zurückgezogen</th></tr></thead>
+    <tbody>
+    {% for name, row in per_agenda.items() %}
+      <tr><td><a href="{{ href('liste', top=name) }}">{{ name }}</a></td>
+        <td class="num"><a href="{{ href('liste', art='antraege', top=name) }}">{{ row.motions }}</a></td>
+        <td class="num"><a href="{{ href('liste', art='aenderungsantraege', top=name) }}">{{ row.amendments }}</a></td>
+        <td class="num"><a href="{{ href('liste', stand='zurueckgezogen', top=name) }}">{{ row.withdrawn }}</a></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

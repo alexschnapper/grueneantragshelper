@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block head %}{% if refresh.running and not static %}<meta http-equiv="refresh" content="5">{% endif %}{% endblock %}
+
+{% macro legend(names, classes) -%}
+<ul class="legend">{% for n in names %}<li><span class="swatch {{ classes[loop.index0] }}"></span>{{ n }}</li>{% endfor %}</ul>
+{%- endmacro %}
+
+{# Horizontale, gestapelte Balken in HTML (bricht sauber um, Hover über title) #}
+{% macro hbars(rows, names, classes) -%}
+{% set top = rows|map(attribute='total')|max if rows else 1 %}
+<div class="hbars">
+{% for r in rows %}
+  <a class="hbar" {% if r.link %}href="{{ href(r.link[0], **r.link[1]) }}"{% endif %} title="{{ r.title or r.label }}: {% for v in r.values %}{{ v }} {{ names[loop.index0] }}{{ ', ' if not loop.last }}{% endfor %}">
+    <span class="hbar-label">{{ r.label }}</span>
+    <span class="hbar-track">{% for v in r.values %}{% if v %}<span class="seg {{ classes[loop.index0] }}" style="width: {{ (v / top * 100)|round(2) }}%"></span>{% endif %}{% endfor %}</span>
+    <span class="hbar-value">{{ r.total }}</span>
+  </a>
+{% endfor %}
+</div>
+{%- endmacro %}
+
+{# Senkrechte, gestapelte Säulen #}
+{% macro columns(rows, names, classes) -%}
+{% set top = rows|map(attribute='total')|max if rows else 1 %}
+<div class="columns" style="--n: {{ rows|length }}">
+{% for r in rows %}
+  <div class="col" title="{{ r.title or r.label }}: {% for v in r.values %}{{ v }} {{ names[loop.index0] }}{{ ', ' if not loop.last }}{% endfor %}">
+    <span class="col-value">{{ r.total if r.total }}</span>
+    <span class="col-track">{% for v in r.values|reverse %}{% if v %}<span class="seg {{ (classes|reverse|list)[loop.index0] }}" style="height: {{ (v / (top or 1) * 100)|round(2) }}%"></span>{% endif %}{% endfor %}</span>
+    <span class="col-label">{{ r.label }}</span>
+  </div>
+{% endfor %}
+</div>
+{%- endmacro %}
+
+{% macro table_view(rows, names, first='') -%}
+<details class="tableview"><summary>Als Tabelle</summary>
+<table><thead><tr><th>{{ first }}</th>{% for n in names %}<th class="num">{{ n }}</th>{% endfor %}<th class="num">gesamt</th></tr></thead>
+<tbody>{% for r in rows %}<tr><td>{{ r.title or r.label }}</td>{% for v in r.values %}<td class="num">{{ v }}</td>{% endfor %}<td class="num">{{ r.total }}</td></tr>{% endfor %}</tbody></table>
+</details>
+{%- endmacro %}
+
+{% block content %}
+<h1>Dashboard</h1>
+
+<div class="tiles">
+  <a class="tile" href="{{ href('liste', art='antraege') }}"><span>{{ dash.counts.motions }}</span>Anträge<small>{{ dash.counts.motions_body }} von Gremien · {{ dash.counts.motions_members }} von Mitgliedern</small></a>
+  <a class="tile" href="{{ href('liste', art='aenderungsantraege') }}"><span>{{ dash.counts.amendments }}</span>Änderungsanträge<small>{{ dash.counts.amendments_body }} von Gremien · {{ dash.counts.amendments_members }} von Mitgliedern</small></a>
+  <a class="tile" href="{{ href('liste', stand='zurueckgezogen') }}"><span>{{ dash.counts.withdrawn }}</span>zurückgezogen</a>
+  <div class="tile"><span>{{ '%g'|format(dash.women_median) if dash.women_median is not none else '–' }} %</span>Median Frauenanteil<small>Mitglieder-Anträge, eingereicht</small></div>
+</div>
+
+<div class="grid2">
+  <section class="card">
+    <h2>Anträge je Tagesordnungspunkt</h2>
+    {{ legend(['eingereicht', 'zurückgezogen'], ['s1', 'muted']) }}
+    {{ hbars(dash.per_agenda_motions, ['eingereicht', 'zurückgezogen'], ['s1', 'muted']) }}
+    {{ table_view(dash.per_agenda_motions, ['eingereicht', 'zurückgezogen'], 'Tagesordnungspunkt') }}
+  </section>
+  <section class="card">
+    <h2>Änderungsanträge je Tagesordnungspunkt</h2>
+    {{ legend(['eingereicht', 'zurückgezogen'], ['s1', 'muted']) }}
+    {{ hbars(dash.per_agenda_amendments, ['eingereicht', 'zurückgezogen'], ['s1', 'muted']) }}
+    {{ table_view(dash.per_agenda_amendments, ['eingereicht', 'zurückgezogen'], 'Tagesordnungspunkt') }}
+  </section>
+</div>
+
+<div class="grid2">
+  <section class="card">
+    <h2>Frauenanteil der Mitglieder-Anträge</h2>
+    <p class="hint">Eingereichte (Änderungs-)Anträge mit angezeigtem Frauenanteil.
+      Mindestens 50 %: {% for k, v in dash.women_parity.items() %}{{ k }} {{ v }}{{ ' · ' if not loop.last }}{% endfor %}.</p>
+    {{ legend(['Anträge', 'Änderungsanträge'], ['s1', 's2']) }}
+    {{ columns(dash.women_histogram, ['Anträge', 'Änderungsanträge'], ['s1', 's2']) }}
+    <p class="axis-caption">Frauenanteil in %, Klassen zu je 10 Prozentpunkten (40 = 40–49 %)</p>
+    {{ table_view(dash.women_histogram, ['Anträge', 'Änderungsanträge'], 'Frauenanteil') }}
+  </section>
+  <section class="card">
+    <h2>Meiste Änderungsanträge</h2>
+    {{ legend(['eingereicht', 'zurückgezogen'], ['s1', 'muted']) }}
+    {{ hbars(dash.most_amended, ['eingereicht', 'zurückgezogen'], ['s1', 'muted']) }}
+    {{ table_view(dash.most_amended, ['eingereicht', 'zurückgezogen'], 'Antrag') }}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Veröffentlichungen pro Tag</h2>
+  <p class="hint">Aus den neuesten Seiten des Aktivitäts-Protokolls (ältere Tage sind evtl. unvollständig).</p>
+  {% if dash.activity_days %}
+  {{ legend(['Anträge', 'Änderungsanträge'], ['s1', 's2']) }}
+  {{ columns(dash.activity_days, ['Anträge', 'Änderungsanträge'], ['s1', 's2']) }}
+  {{ table_view(dash.activity_days, ['Anträge', 'Änderungsanträge'], 'Tag') }}
+  {% else %}<p>Keine Einträge.</p>{% endif %}
+</section>
+
+<section class="card" id="quorum">
+  <h2>Quorum der veröffentlichten Mitglieder-Anträge</h2>
+  <p class="hint">Veröffentlichte Mitglieder-Anträge haben das Quorum ({{ index.min_total }} Mitantragsteller*innen, davon
+    {{ index.min_women }} Frauen) bereits erreicht. Interessant ist, <strong>wie knapp</strong>: Die Frauenzahl wird aus
+    dem gerundeten Frauenanteil geschätzt (±1 Person).</p>
+
+  {% if refresh.running %}
+    <p><strong>Abruf läuft:</strong> {{ refresh.done }} von {{ refresh.total }} Seiten (1 Seite pro Sekunde).
+      Die Seite aktualisiert sich automatisch.</p>
+    <div class="bar"><span style="width: {{ (refresh.done / (refresh.total or 1) * 100)|round(1) }}%"></span></div>
+  {% endif %}
+
+  {% if dash.quorum_points %}
+    {% set met = dash.quorum_points|selectattr('meets')|list %}
+    <div class="tiles">
+      <div class="tile"><span>{{ met|length }} / {{ dash.quorum_points|length }}</span>erfüllen beide Quoren (geschätzt)</div>
+      <div class="tile"><span>{{ '%g'|format(dash.supporters_median) }}</span>Median Mitantragsteller*innen</div>
+      <div class="tile"><span>{{ '%+d'|format(dash.quorum_points[0].buffer) }}</span>knappster Puffer ({{ dash.quorum_points[0].prefix }})</div>
+    </div>
+    {{ legend(['Anträge', 'Änderungsanträge'], ['s1', 's2']) }}
+    {{ scatter }}
+    <p class="hint">Punkte im grünen Bereich erfüllen beide Quoren. Punkt anklicken für die Auswertung.</p>
+
+    <h3>Am knappsten</h3>
+    <table>
+      <thead><tr><th>Kürzel</th><th class="num">Mitantrag&shy;steller*innen</th><th class="num">Frauen ~</th><th class="num">Puffer gesamt</th><th class="num">Puffer Frauen</th></tr></thead>
+      <tbody>
+      {% for p in dash.quorum_points[:10] %}
+        <tr><td><a href="{{ href('auswertung', url=p.url) }}">{{ p.prefix }}</a></td><td class="num">{{ p.supporters }}</td>
+          <td class="num">{{ p.women }} ({{ p.women_share }} %)</td><td class="num">{{ '%+d'|format(p.buffer_total) }}</td><td class="num">{{ '%+d'|format(p.buffer_women) }}</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    <details class="tableview"><summary>Alle {{ dash.quorum_points|length }} als Tabelle</summary>
+      <table><tbody>{% for p in dash.quorum_points %}
+        <tr><td><a href="{{ href('auswertung', url=p.url) }}">{{ p.prefix }}</a></td><td class="num">{{ p.supporters }}</td><td class="num">{{ p.women }} ({{ p.women_share }} %)</td>
+          <td class="num">{{ '%+d'|format(p.buffer_total) }}</td><td class="num">{{ '%+d'|format(p.buffer_women) }}</td></tr>
+      {% endfor %}</tbody></table>
+    </details>
+  {% elif not refresh.running and not static %}
+    <p>Noch keine Daten. Der Abruf lädt die Einzelseiten aller veröffentlichten Mitglieder-Anträge
+      ({{ dash.counts.motions_members + dash.counts.amendments_members }} Seiten, langsam mit 1 Seite pro Sekunde).</p>
+  {% endif %}
+
+  {% if static %}
+  <p class="hint">{% if stats_updated %}Stand: {{ stats_updated.strftime('%d.%m.%Y %H:%M') }} Uhr{% else %}In diesem Build nicht enthalten.{% endif %}</p>
+  {% else %}
+  <form method="post" action="/dashboard/aktualisieren" class="refresh">
+    {% if stats_updated %}<span class="hint">Stand: {{ stats_updated.strftime('%d.%m.%Y %H:%M') }}</span>{% endif %}
+    {% if refresh.running %}
+    {% elif refresh_available_at %}
+      <button disabled>Aktualisieren</button> <span class="hint">wieder möglich ab {{ refresh_available_at.strftime('%H:%M') }} Uhr</span>
+    {% else %}
+      <button>{{ 'Aktualisieren' if stats_updated else 'Daten abrufen' }}</button>
+    {% endif %}
+    {% if refresh.errors %}<span class="err">{{ refresh.errors|length }} Seiten nicht abrufbar</span>{% endif %}
+  </form>
+  {% endif %}
+</section>
+
+<section class="card">
+  <h2>Beobachtete Anträge in der Sammelphase</h2>
+  {% if progress %}
+    {% for item, chart in progress %}{% set q = item.detail.quorum %}
+    <h3><a href="{{ href('auswertung', url=item.url) }}">{{ item.detail.title }}</a></h3>
+    <p>{{ q.current_total }} / {{ q.min_total }} gesamt · {{ q.current_women }} / {{ q.min_women }} Frauen ·
+      noch {{ q.still_needed }}, davon mindestens {{ q.missing_women }} Frauen</p>
+    {% if chart %}{{ legend(['gesamt', 'Frauen'], ['s1', 's2']) }}{{ chart }}
+    {% else %}<p class="hint">Verlauf erscheint, sobald sich der Stand zwischen zwei Abrufen geändert hat.</p>{% endif %}
+    {% endfor %}
+  {% else %}
+    <p>Keine beobachteten Anträge in der Sammelphase. Sie sind öffentlich nicht gelistet und kommen nur über
+      ihren Direktlink ({{ 'lokale App: ' if static }}Suchfeld → „Beobachten“) hierher.</p>
+  {% endif %}
+</section>
+{% endblock %}

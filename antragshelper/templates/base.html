@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Antragshelper{% endblock %} · {{ settings.consultation }}</title>
+  <link rel="stylesheet" href="{{ href('static', path='style.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="disclaimer" role="note">
+    <strong>Inoffizielles Projekt</strong> – keine Anwendung von BÜNDNIS 90/DIE GRÜNEN.
+    MVP ohne Gewähr auf Vollständigkeit oder Richtigkeit ·
+    <a href="{{ settings.repo_url }}">Quellcode auf GitHub</a>
+  </div>
+  <header>
+    <a class="brand" href="{{ href('index') }}">Antragshelper <small>{{ settings.consultation }}</small></a>
+    <form class="search" {% if static %}id="staticSearch" data-index="{{ href('static', path='suchindex.json') }}" data-root="{{ href.root }}"{% else %}action="/suche" method="get"{% endif %}>
+      <input name="q" placeholder="Kürzel (z. B. VR-01){{ '' if static else ' oder Link' }}" value="{{ q|default('') }}" aria-label="Antrag suchen" autofocus>
+      <button>Auswerten</button>
+    </form>
+    <nav><a href="{{ href('index') }}">Übersicht</a> <a href="{{ href('dashboard') }}">Dashboard</a> <a href="{{ href('aktivitaet') }}">Aktivität</a> <a href="{{ href('transparenz') }}">Transparenz</a></nav>
+  </header>
+  {% if static %}<p class="search-msg" id="searchMsg" hidden></p>{% endif %}
+  <main>{% block content %}{% endblock %}</main>
+  <footer>
+    <p class="fetch-info">
+    {% if static and footer %}{% set r = footer.last_run %}
+      <strong>Letzter Abruf:</strong> {{ r.when.strftime('%d.%m.%Y %H:%M') }} Uhr – {{ r.anlass }} ({{ r.gesamt }} {{ 'Abruf' if r.gesamt == 1 else 'Abrufe' }}).
+      <strong>Nächste Prüfung:</strong>
+      <time data-next-check data-minute="{{ footer.check_minute }}">{{ footer.next_check.strftime('%H:%M') }} Uhr</time>
+      (1 Abruf, Neubau nur bei Änderungen).
+    {% elif footer %}
+      {% if footer.last_fetch %}<strong>Letzter Abruf:</strong> {{ footer.last_fetch.when.strftime('%H:%M:%S') }} Uhr – {{ footer.last_fetch.purpose }}.
+        {{ footer.session_count }} {{ 'Abruf' if footer.session_count == 1 else 'Abrufe' }} seit Start der App, nur bei Bedarf (kein Hintergrundabruf).
+      {% else %}Seit Start der App noch kein Abruf bei antraege.gruene.de.{% endif %}
+    {% endif %}
+      <a href="{{ href('transparenz') }}">Alle Abrufe und Gründe</a></p>
+    <p>Daten: <a href="{{ settings.consultation_url }}">{{ settings.consultation_url }}</a> (öffentlich, ohne Login).
+      Es werden keine Namen und kein Antragstext gespeichert.
+      {% if static %}Stand dieser Seite: {{ built_at.strftime('%d.%m.%Y %H:%M') }} Uhr.{% endif %}</p>
+    <p>Grüne Antragshelper ist ein inoffizielles, ehrenamtliches Projekt und steht in keiner Verbindung zu
+      BÜNDNIS 90/DIE GRÜNEN. Daten stammen aus <a href="https://github.com/CatoTH/antragsgruen">Antragsgrün</a> –
+      danke an dessen Entwickler*innen. <a href="{{ settings.repo_url }}">GitHub</a> · GPL-3.0</p>
+  </footer>
+  {% if static %}<script src="{{ href('static', path='static.js') }}" defer></script>{% endif %}
+</body>
+</html>

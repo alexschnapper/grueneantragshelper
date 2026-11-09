@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block title %}Transparenz{% endblock %}
+
+{% macro kb(n) -%}{{ '%.0f'|format(n / 1024) if n >= 1024 else n }} {{ 'KB' if n >= 1024 else 'B' }}{%- endmacro %}
+
+{% block content %}
+<h1>Transparenz: Abrufe bei antraege.gruene.de</h1>
+<p>Der Antragshelper liest öffentlich zugängliche Seiten von
+  <a href="{{ settings.consultation_url }}">{{ settings.consultation_url }}</a>. Hier steht, <strong>was</strong>
+  abgerufen wird, <strong>wann</strong> und <strong>warum</strong> – damit niemand raten muss, welche Last
+  dieses inoffizielle Projekt erzeugt.</p>
+
+<section class="card">
+  <h2>Grundsätze</h2>
+  <ul>
+    <li>Nur öffentlich verlinkte Seiten, <strong>kein Login</strong>, kein Durchprobieren von IDs.</li>
+    <li>Es werden <strong>keine Namen</strong> und <strong>kein Antragstext</strong> gespeichert – nur Kürzel, Titel, Links und Zahlen.</li>
+    <li>Zwischenspeicher: Startseite und Aktivitäts-Protokoll {{ settings.ttl_index // 60 }} Minuten, Einzelseiten {{ settings.ttl_detail // 60 }} Minuten.</li>
+    <li>Einzelseiten für Quorum-Zahlen werden gedrosselt geholt ({{ '%g'|format(stats_delay) }} Seite pro Sekunde) und
+      {{ stats_max_age_days }} Tage wiederverwendet.</li>
+    <li>Kennung bei jedem Abruf (User-Agent): <code>{{ settings.user_agent }}</code></li>
+  </ul>
+</section>
+
+<section class="card">
+  <h2>Zeitplan</h2>
+  {% if static %}
+  <table class="facts-table">
+    <tr><th>Prüfung auf Änderungen</th>
+      <td>stündlich zur Minute {{ check_minute }} – <strong>1 Abruf</strong> (Seite 1 des Aktivitäts-Protokolls)
+        plus je 1 Abruf pro beobachtetem Link. Nächste geplant:
+        <time data-next-check data-date data-minute="{{ check_minute }}">{{ next_check.strftime('%d.%m. %H:%M') }} Uhr</time></td></tr>
+    <tr><th>Neubau der Seite</th>
+      <td>nur wenn die Prüfung eine Änderung findet (neue Veröffentlichung oder geänderter beobachteter Stand)</td></tr>
+    <tr><th>Sicherheits-Build</th>
+      <td>nachts ({{ nightly_utc }} UTC), z. B. für zurückgezogene Anträge, die nicht im Protokoll stehen. Nächster:
+        <time data-next-nightly data-utc="{{ nightly_utc }}">{{ next_nightly.strftime('%d.%m. %H:%M') }} Uhr</time></td></tr>
+  </table>
+  <p class="hint">GitHub führt geplante Läufe teils mit Verzögerung aus. Prüfungen ohne Änderung erzeugen keinen
+    Neubau und erscheinen deshalb nicht unten in der Tabelle, sind aber in den
+    <a href="{{ settings.repo_url }}/actions/workflows/pages.yml">GitHub-Actions-Protokollen</a> einsehbar.</p>
+  {% else %}
+  <p>Die lokale App ruft <strong>nur bei Bedarf</strong> ab: wenn eine Seite der App geöffnet wird und der
+    Zwischenspeicher abgelaufen ist, oder wenn im Dashboard „Daten abrufen“ gedrückt wird. Es gibt keine
+    Abrufe im Hintergrund.</p>
+  {% endif %}
+</section>
+
+{% if static %}
+<section class="card">
+  <h2>Letzte Läufe</h2>
+  <div class="tiles">
+    <div class="tile"><span>{{ last_24h }}</span>Abrufe in 24 Stunden<small>veröffentlichte Läufe, zzgl. Prüfungen ohne Änderung</small></div>
+    <div class="tile"><span>{{ last_7d }}</span>Abrufe in 7 Tagen</div>
+    <div class="tile"><span>{{ runs|length }}</span>protokollierte Läufe</div>
+  </div>
+  <table>
+    <thead><tr><th>Zeitpunkt</th><th>Anlass</th><th>Abrufe</th><th class="num">Daten</th><th class="num">Dauer</th></tr></thead>
+    <tbody>
+    {% for r in runs %}
+      <tr>
+        <td>{{ r.when.strftime('%d.%m.%Y %H:%M') }}</td>
+        <td>{{ r.anlass }}</td>
+        <td><strong>{{ r.gesamt }}</strong>{% if r.abrufe %}<br><small>{% for zweck, n in r.abrufe.items() %}{{ n }} × {{ zweck }}{{ '<br>'|safe if not loop.last }}{% endfor %}</small>{% endif %}</td>
+        <td class="num">{{ kb(r.bytes or 0) }}</td>
+        <td class="num">{{ '%g'|format(r.dauer_s) }} s</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
+<section class="card">
+  <h2>{{ 'Einzelne Abrufe des letzten Laufs' if static else 'Abrufe seit Start der lokalen App' }} <small class="count">{{ requests|length }}</small></h2>
+  {% if requests %}
+  <table>
+    <thead><tr><th>Zeit</th><th>Warum</th><th>Seite</th><th class="num">Status</th><th class="num">Größe</th><th class="num">Dauer</th></tr></thead>
+    <tbody>
+    {% for r in requests %}
+      <tr>
+        <td class="when">{{ r.when.strftime('%d.%m. %H:%M:%S') }}</td>
+        <td>{{ r.zweck }}</td>
+        <td class="path"><a href="{{ r.url }}">{{ r.pfad }}</a></td>
+        <td class="num">{{ r.status or '–' }}</td>
+        <td class="num">{{ kb(r.bytes) }}</td>
+        <td class="num">{{ r.ms }} ms</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>Noch keine Abrufe.</p>
+  {% endif %}
+</section>
+{% endblock %}
