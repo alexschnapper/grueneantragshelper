@@ -113,3 +113,4 @@ footer p { margin: 6px 0; }
 .facts-table th { width: 30%; font-weight: 600; }
 td.path { word-break: break-all; font-size: .85rem; }
 .fetch-info { color: var(--muted); }
+.status-noquorum { background: color-mix(in srgb, var(--s2) 22%, transparent); }

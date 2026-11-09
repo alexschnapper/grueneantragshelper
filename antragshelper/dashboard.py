@@ -5,7 +5,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 from statistics import median
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 from .models import ActivityEntry, ConsultationIndex, agenda_label
 
@@ -58,6 +58,14 @@ class QuorumPoint:
     def meets(self) -> bool:
         return self.buffer_total >= 0 and self.buffer_women >= 0
 
+    @property
+    def without_quorum(self) -> bool:
+        """Veröffentlicht, aber mit weniger Mitantragsteller*innen als nötig (z. B. „und 0 weitere“).
+
+        Nur die exakt bekannte Gesamtzahl entscheidet, nicht die geschätzte Frauenzahl.
+        """
+        return self.supporters < self.min_total
+
 
 @dataclass
 class Dashboard:
@@ -72,8 +80,17 @@ class Dashboard:
     quorum_points: List[QuorumPoint] = field(default_factory=list)
 
     @property
+    def with_quorum(self) -> List[QuorumPoint]:
+        return [p for p in self.quorum_points if not p.without_quorum]
+
+    @property
+    def without_quorum(self) -> List[QuorumPoint]:
+        return [p for p in self.quorum_points if p.without_quorum]
+
+    @property
     def supporters_median(self) -> Optional[float]:
-        return median(p.supporters for p in self.quorum_points) if self.quorum_points else None
+        points = self.with_quorum
+        return median(p.supporters for p in points) if points else None
 
 
 def _per_agenda(index: ConsultationIndex, kind: str, art: str) -> List[BarRow]:
@@ -126,6 +143,14 @@ def _activity_days(entries: Sequence[ActivityEntry], today: date) -> List[BarRow
         rows.append(BarRow(day.strftime("%d.%m."), per_day.get(day, [0, 0]), day.strftime("%d.%m.%Y")))
         day += timedelta(days=1)
     return rows
+
+
+def without_quorum_urls(published_stats: Sequence[sqlite3.Row], min_total: Optional[int]) -> Set[str]:
+    """URLs veröffentlichter Mitglieder-Anträge, die ohne Quorum eingereicht wurden."""
+    if min_total is None:
+        return set()
+    return {r["url"] for r in published_stats
+            if r["supporter_count"] is not None and r["supporter_count"] < min_total}
 
 
 def build(

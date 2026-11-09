@@ -16,7 +16,7 @@ from typing import Dict, List, Optional
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from . import stand, views
+from . import dashboard, stand, views
 from .config import Settings
 from .links import Links, detail_page, list_page
 from .models import ConsultationIndex, Detail, IndexEntry, normalize_prefix
@@ -120,19 +120,21 @@ def build_site(out: Path, settings: Settings, details: bool = False, watch_urls:
                   for top in [""] + index.agenda_items
                   for state in ("", "aktiv", "zurueckgezogen")]
         list_pages: Dict[str, str] = {"|".join(c): "../" + list_page(*c) for c in combos}
+        without_quorum = dashboard.without_quorum_urls(helper.store.published_stats(), index.min_total)
         for art, top, state in combos:
             render("list.html", list_page(art, top, state),
-                   list_pages=list_pages, **views.listing(index, art, top, state))
+                   list_pages=list_pages, **views.listing(index, art, top, state, without_quorum=without_quorum))
 
         watched_by_parent = {}
         for item in watched:
             watched_by_parent.setdefault(item.url.rsplit("/", 1)[0], []).append(item)
         for entry in index.entries:
-            render("detail.html", detail_page(entry.url),
-                   detail=detail_from_index(entry, index, stats.get(entry.url)), entry=entry,
+            detail = detail_from_index(entry, index, stats.get(entry.url))
+            render("detail.html", detail_page(entry.url), detail=detail, entry=entry,
                    published_amendments=[a for a in index.amendments if a.parent_url == entry.url],
                    collecting_amendments=watched_by_parent.get(entry.url, []),
-                   history=[], watched=False)
+                   history=[], watched=False, min_total=index.min_total,
+                   without_quorum=views.is_without_quorum(detail, entry, index.min_total))
         for item in watched:
             if item.detail and item.url not in {e.url for e in index.entries}:
                 render("detail.html", detail_page(item.url), detail=item.detail, entry=None,
