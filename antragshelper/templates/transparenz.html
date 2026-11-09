@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% set active_page = "transparenz" %}
 {% block title %}Transparenz{% endblock %}
 
 {% macro kb(n) -%}{{ '%.0f'|format(n / 1024) if n >= 1024 else n }} {{ 'KB' if n >= 1024 else 'B' }}{%- endmacro %}
