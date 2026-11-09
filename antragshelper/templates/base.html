@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{% block title %}Antragshelper{% endblock %} · {{ settings.consultation }}</title>
   <link rel="stylesheet" href="{{ href('static', path='style.css') }}">
+  {% if static %}<link rel="alternate" type="application/atom+xml" title="Frühwarnungen" href="{{ href.root }}warnungen.xml">{% endif %}
   {% block head %}{% endblock %}
 </head>
 <body>

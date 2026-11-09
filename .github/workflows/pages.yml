@@ -32,6 +32,8 @@ concurrency:
 
 env:
   STAND_URL: https://alexschnapper.github.io/grueneantragshelper/static/stand.json
+  # Fristen und gespeicherte Stände sind deutsche Ortszeit (Hochrechnung bis zur Frist)
+  TZ: Europe/Berlin
 
 jobs:
   check:

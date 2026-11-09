@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="de">
+  <title>Antragshelper {{ settings.consultation }}: Frühwarnungen zum Quorum</title>
+  <subtitle>Beobachtete Anträge in der Sammelphase, deren Quorum – vor allem das Frauenquorum – gefährdet ist. Inoffizielles Projekt, keine Anwendung von BÜNDNIS 90/DIE GRÜNEN.</subtitle>
+  <id>{{ settings.site_url }}/warnungen.xml</id>
+  <link rel="self" href="{{ settings.site_url }}/warnungen.xml"/>
+  <link rel="alternate" href="{{ settings.site_url }}/"/>
+  <author><name>Grüne Antragshelper (inoffiziell)</name><uri>{{ settings.repo_url }}</uri></author>
+  <updated>{{ updated }}</updated>
+{% for e in eintraege %}
+  <entry>
+    <title>{{ e.titel }}</title>
+    <id>{{ e.id }}</id>
+    <link href="{{ e.link }}"/>
+    <updated>{{ e.seit }}</updated>
+    <summary>{{ e.text }}</summary>
+  </entry>
+{% endfor %}
+</feed>

@@ -58,7 +58,7 @@ python3 -m venv .venv
 
 | Befehl | Was passiert |
 |---|---|
-| `.venv/bin/python -m antragshelper server` | Web-App auf <http://127.0.0.1:8000> (mit Beobachten und Verlauf) |
+| `.venv/bin/python -m antragshelper server` | Web-App auf <http://localhost:8000> (mit Beobachten und Verlauf) |
 | `.venv/bin/python -m antragshelper zeige VR-01` | Auswertung direkt im Terminal (Kürzel oder Link) |
 | `.venv/bin/python -m antragshelper build --out _site` | Statische Seite erzeugen (wie auf GitHub Pages) |
 | `.venv/bin/pytest` | Tests ausführen |
@@ -77,6 +77,27 @@ Konfiguration über Umgebungsvariablen:
 | `ANTRAGSHELPER_CONSULTATION` | `52bdk` |
 | `ANTRAGSHELPER_DB` | `data/antragshelper.sqlite3` |
 
+Die Antragsfristen für die Hochrechnung stehen je Konferenz in `FRISTEN` in
+[`antragshelper/config.py`](antragshelper/config.py) (für `52bdk`: Anträge 09.10.2026, Änderungsanträge
+13.11.2026, jeweils 11:59 Uhr). Für eine andere Konferenz (Landes-, Bezirksparteitag,
+Kreismitgliederversammlung) dort einen Eintrag mit ihrem Pfad ergänzen und `ANTRAGSHELPER_CONSULTATION`
+setzen. Ohne Eintrag zeigt die App das Tempo, aber keine Prognose.
+
+**Trend bis zur Frist** (lokale App und GitHub-Pages-Seite): Aus den gespeicherten Ständen berechnet die App das
+Sammeltempo (letzte 24 Stunden, bei kürzerem Verlauf seit Beobachtungsbeginn, mindestens 1 Stunde) und
+rechnet auf die Frist hoch: Stand + Tempo × verbleibende Stunden. Die Ampel gilt für das Frauenquorum
+(ohne Frauenquorum für das Gesamtquorum): Grün (auf Kurs) ab 110 % des Quorums, Gelb (gefährdet) ab 90 %,
+sonst Rot (Scheitern droht) – Rot auch, wenn das Gesamtquorum bei diesem Tempo nicht erreicht wird. Eine
+Ampel gibt es erst ab 12 Stunden Verlauf (kurz vor der Frist entsprechend weniger). Dazu zeigt sie, wie viele
+Personen pro Stunde ab jetzt nötig sind, eine Handlungsempfehlung und einen kopierbaren Mobilisierungs-Text.
+In der lokalen App werden Stände nur beim Aufruf gespeichert – je öfter beobachtete Anträge geöffnet
+werden, desto genauer. Auf der GitHub-Pages-Seite kommen sie aus den stündlichen Prüfungen.
+
+**Frühwarnungen**: Bei gelber oder roter Ampel – und, solange die Prognose noch vorläufig ist, ab 48 Stunden
+vor Fristende – erscheint ein Antrag oben in der Übersicht unter „Frühwarnungen“ („Achtung: Gesamtfortschritt
+bei 74 %, Frauenquorum bei 60 % – noch 18 Frauen nötig …“). Die Auswertungsseite bietet zusätzlich einen
+gezielten **Aufruf an Frauennetzwerke** zum Kopieren.
+
 ## 🌐 GitHub Pages
 
 Der Workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) hält die Seite aktuell und
@@ -94,6 +115,14 @@ nur Änderungen an `antragshelper/`, `pyproject.toml` oder `beobachtet.txt`.
 Warum nicht die Feeds? `feedall` & Co. sind nach Anlegedatum sortiert und enthalten nur 20 Einträge –
 spät veröffentlichte Änderungsanträge tauchen dort nicht auf. Das Aktivitäts-Protokoll ist kleiner
 (ca. 16 statt 55 KB) und nach Ereignis sortiert.
+
+Für Trend und Frühwarnungen speichert `stand.json` den Verlauf der beobachteten Anträge (nur Zahlen und
+Status, nur bei Änderungen, nur Links aus `beobachtet.txt`). Die stündliche Prüfung rechnet daraus die Ampel
+mit und baut auch dann neu, wenn sie umspringt (etwa weil das Tempo mit der Zeit nicht mehr reicht) – ohne
+zusätzliche Abrufe. Frühwarnungen gibt es als **Atom-Feed** unter `warnungen.xml`
+(<https://alexschnapper.github.io/grueneantragshelper/warnungen.xml>): abonnierbar in jedem Feed-Reader, ohne
+Anmeldung und ohne Daten über Abonnent*innen. Eine Warnung erscheint dort als neuer Eintrag, sobald ein Antrag
+eine neue Warnstufe erreicht.
 
 Einmalig einrichten: **Settings → Pages → Build and deployment → Source: „GitHub Actions“**.
 

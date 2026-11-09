@@ -114,3 +114,11 @@ footer p { margin: 6px 0; }
 td.path { word-break: break-all; font-size: .85rem; }
 .fetch-info { color: var(--muted); }
 .status-noquorum { background: color-mix(in srgb, var(--s2) 22%, transparent); }
+/* Ampel der Hochrechnung – immer mit Text, nicht nur Farbe */
+.ampel-gruen { background: color-mix(in srgb, var(--green-light) 30%, transparent); }
+.ampel-gelb { background: color-mix(in srgb, #e0b000 30%, transparent); }
+.ampel-rot { background: color-mix(in srgb, var(--err) 25%, transparent); }
+.ampel-offen { background: var(--line); color: var(--muted); }
+.snippet { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; font: inherit; color: var(--fg); background: var(--bg); }
+.warnings { padding-left: 0; list-style: none; }
+.warnings li { padding: 8px 0; border-bottom: 1px solid var(--line); }

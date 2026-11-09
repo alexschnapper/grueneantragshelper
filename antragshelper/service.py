@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timedelta
 from typing import List, Optional, Tuple
 
+from . import trend
 from .client import AntragsgruenClient, SourceError
 from .config import Settings
 from .models import ActivityEntry, ConsultationIndex, Detail, IndexEntry
@@ -89,6 +90,18 @@ class Antragshelper:
             if i.url.startswith(motion_url + "/") and i.url not in published_urls
         ]
         return published, watched
+
+    def hochrechnung(self, detail: Detail, jetzt: Optional[datetime] = None) -> Optional[trend.Trend]:
+        """Trend bis zur Frist aus den gespeicherten Ständen (None außerhalb der Sammelphase)."""
+        q = detail.quorum
+        if q is None or q.reached or q.current_total is None:
+            return None
+        verlauf = [
+            trend.Stand(datetime.fromisoformat(r["fetched_at"]), r["current_total"], r["current_women"])
+            for r in self.store.history(detail.url) if r["current_total"] is not None
+        ]
+        aktuell = trend.Stand(jetzt or datetime.now().replace(microsecond=0), q.current_total, q.current_women)
+        return trend.hochrechnen(verlauf, aktuell, q.min_total, q.min_women, self.settings.frist_fuer(detail.kind))
 
     @staticmethod
     def needs_support(items: List[WatchedItem]) -> List[WatchedItem]:

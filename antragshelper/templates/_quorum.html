@@ -4,6 +4,11 @@
 </div>
 {%- endmacro %}
 
+{% macro ampel(t) -%}
+{% set labels = {'gruen': 'Grün · auf Kurs', 'gelb': 'Gelb · gefährdet', 'rot': 'Rot · Scheitern droht'} %}
+<span class="status ampel-{{ t.ampel or 'offen' }}">{{ labels.get(t.ampel, 'vorläufig · zu wenig Verlauf' if t.massgeblich.prognose is not none else 'noch keine Prognose') }}</span>
+{%- endmacro %}
+
 {% macro summary(q) -%}
 {% if q.reached %}
   <strong class="ok">Quorum erreicht</strong> (mindestens {{ q.min_total }})

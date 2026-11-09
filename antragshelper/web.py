@@ -33,7 +33,9 @@ def _render(request: Request, name: str, status_code: int = 200, **context) -> H
 @app.get("/", response_class=HTMLResponse)
 def overview(request: Request):
     try:
-        context = views.overview(helper.index(), helper.watchlist())
+        watched = helper.watchlist()
+        trends = {i.url: helper.hochrechnung(i.detail) for i in helper.needs_support(watched)}
+        context = views.overview(helper.index(), watched, trends)
     except SourceError as e:
         return _render(request, "error.html", 502, message=str(e))
     return _render(request, "index.html", **context)
@@ -78,6 +80,7 @@ def evaluation(request: Request, url: str):
         watched=helper.store.is_watched(url),
         without_quorum=views.is_without_quorum(detail, entry, min_total),
         min_total=min_total,
+        **views.trend_context(helper, detail),
     )
 
 

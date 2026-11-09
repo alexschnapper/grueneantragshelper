@@ -12,17 +12,19 @@ Local web app (German UI) that scrapes public pages of antraege.gruene.de (an [A
 python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'   # setup (Python >= 3.9)
 .venv/bin/pytest                                             # all tests
 .venv/bin/pytest tests/test_parsers.py::test_index_counts_and_lookup   # single test
-.venv/bin/python -m antragshelper server                     # web UI on 127.0.0.1:8000
+.venv/bin/python -m antragshelper server                     # web UI on localhost:8000
 .venv/bin/python -m antragshelper zeige VR-01                # CLI evaluation (prefix or URL)
 .venv/bin/python -m antragshelper build --out _site [--details] [--beobachten beobachtet.txt] [--vorher stand.json]   # static site
 .venv/bin/python -m antragshelper check --vorher <URL|stand.json>   # prints changed=true|false
 ```
 
-Env vars: `ANTRAGSHELPER_BASE_URL`, `ANTRAGSHELPER_CONSULTATION` (default `52bdk`), `ANTRAGSHELPER_DB` (default `data/antragshelper.sqlite3`, gitignored).
+Env vars: `ANTRAGSHELPER_BASE_URL`, `ANTRAGSHELPER_CONSULTATION` (default `52bdk`), `ANTRAGSHELPER_DB` (default `data/antragshelper.sqlite3`, gitignored). Deadlines for the trend live in `FRISTEN` in `config.py`, keyed by consultation path (they are free text on the start page, so not parsed); add an entry per new conference.
 
 ## Architecture
 
 Flow: `client.py` (httpx + in-memory TTL cache, refuses foreign hosts) → `parsers.py` (BeautifulSoup) → `models.py` dataclasses → `service.py` (`Antragshelper`, shared by `web.py` FastAPI/Jinja2 and the CLI in `__main__.py`) → `store.py` (SQLite: watchlist + snapshots of quorum numbers, written only when values change).
+
+`trend.py` holds the pure quorum projection (velocity over a rolling 24 h window from `snapshots`, carried forward because snapshots are only written on change; traffic light at 110 % / 90 % of the quorum; messenger snippet). `Antragshelper.hochrechnung` feeds it. For the static site, `stand.json` carries `verlauf` (snapshot rows of watched links) and `warnungen` (stage + since, keeps Atom entry IDs stable); `stand.import_history` must run before `fingerprint`/`watchlist` in both `check` and `build`. The fingerprint includes ampel + warnstufe, so the hourly check also rebuilds when the traffic light flips without new numbers (no extra fetches). `build.py` writes the Atom feed `warnungen.xml` (absolute links via `Settings.site_url`). The workflow sets `TZ=Europe/Berlin` because snapshots and deadlines are naive local time.
 
 `dashboard.py` computes chart data (pure, no fetching); `charts.py` renders SVG server-side (scatter, progress lines), bar/column charts are HTML/CSS macros in `templates/dashboard.html`. Series colors are the validated blue/orange pair as CSS vars (`--s1`/`--s2`) in `static/style.css`. The dashboard's "Stufe B" crawl (`Antragshelper.start_stats_refresh`) runs in a background thread, only on button press, rate-limited (`STATS_DELAY_SECONDS`, `STATS_MIN_INTERVAL`), and stores only counts in `published_stats`.
 

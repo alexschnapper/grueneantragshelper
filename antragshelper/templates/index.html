@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_quorum.html" import bar, summary %}
+{% from "_quorum.html" import ampel, bar, summary %}
 {% block title %}Übersicht{% endblock %}
 {% block content %}
 <section>
@@ -13,6 +13,25 @@
   <p class="hint">Gezählt werden die veröffentlichten Einträge der Tagesordnung. Anträge in der Sammelphase
     sind auf antraege.gruene.de nicht öffentlich gelistet – füge sie über ihren Direktlink hinzu.</p>
 </section>
+
+{% if warnings or static %}
+<section>
+  <h2 id="warnungen">Frühwarnungen</h2>
+  {% if warnings %}
+  <ul class="warnings">
+  {% for item, t in warnings %}
+    <li>{{ ampel(t) }} <a href="{{ href('auswertung', url=item.url) }}">{{ item.detail.title }}</a><br>
+      {{ t.warnung }}{% if t.empfehlung %} {{ t.empfehlung }}{% endif %}</li>
+  {% endfor %}
+  </ul>
+  {% else %}
+  <p>Derzeit keine Warnungen für beobachtete Anträge.</p>
+  {% endif %}
+  <p class="hint">Gewarnt wird bei gelber oder roter Ampel und, solange die Prognose noch vorläufig ist, ab 48 Stunden
+    vor Fristende.{% if static %} Abonnieren: <a href="{{ href.root }}warnungen.xml">Feed der Frühwarnungen</a> (Atom, für jeden
+    Feed-Reader – ohne Anmeldung, es werden keine Daten über Abonnent*innen erhoben).{% endif %}</p>
+</section>
+{% endif %}
 
 <section>
   <h2 id="unterstuetzung">Brauchen noch Unterstützung</h2>
@@ -30,7 +49,7 @@
   </div>
   {% if needs_support %}
   <table>
-    <thead><tr><th>Antrag</th><th>Stand</th><th>Frauen</th><th>Es fehlen</th></tr></thead>
+    <thead><tr><th>Antrag</th><th>Stand</th><th>Frauen</th><th>Es fehlen</th>{% if trends %}<th>Trend bis zur Frist</th>{% endif %}</tr></thead>
     <tbody>
     {% for item in needs_support %}{% set q = item.detail.quorum %}
       <tr>
@@ -38,6 +57,9 @@
         <td>{{ q.current_total }} / {{ q.min_total }}{{ bar(q.progress_total, 'gesamt') }}</td>
         <td>{% if q.min_women is not none %}{{ q.current_women }} / {{ q.min_women }}{{ bar(q.progress_women, 'Frauen') }}{% else %}–{% endif %}</td>
         <td>{{ summary(q) }}</td>
+        {% if trends %}{% set t = trends.get(item.url) %}
+        <td>{% if t %}{{ ampel(t) }}{% if t.empfehlung %}<br><small>{{ t.empfehlung }}</small>{% endif %}{% else %}–{% endif %}</td>
+        {% endif %}
       </tr>
     {% endfor %}
     </tbody>

@@ -55,8 +55,10 @@ def _check(previous_source: str, watch_file: Optional[Path]) -> int:
     watch_urls = read_watch_file(watch_file) if watch_file else []
     with tempfile.TemporaryDirectory() as tmp:
         helper = Antragshelper(dataclasses.replace(settings, db_path=Path(tmp) / "check.sqlite3"))
+        watch_urls = [u for u in watch_urls if helper.client.is_own_url(u)]
+        stand.import_history(helper, previous, watch_urls)  # für die Ampel im Fingerabdruck, ohne Abruf
         try:
-            current = stand.fingerprint(helper, [u for u in watch_urls if helper.client.is_own_url(u)])
+            current = stand.fingerprint(helper, watch_urls)
         except SourceError as e:
             print(e, file=sys.stderr)
             return 2
@@ -67,7 +69,7 @@ def _check(previous_source: str, watch_file: Optional[Path]) -> int:
     elif before.get("aktivitaet") != current["aktivitaet"]:
         reason = "neue Einträge im Aktivitäts-Protokoll"
     elif before.get("beobachtet") != current["beobachtet"]:
-        reason = "Stand eines beobachteten Antrags geändert"
+        reason = "Stand oder Trend eines beobachteten Antrags geändert"
     else:
         reason = None
     outputs = {
@@ -125,7 +127,7 @@ def main() -> int:
         return 0
     import uvicorn
 
-    uvicorn.run("antragshelper.web:app", host="127.0.0.1", port=args.port)
+    uvicorn.run("antragshelper.web:app", host="localhost", port=args.port)
     return 0
 
 
