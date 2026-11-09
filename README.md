@@ -86,7 +86,10 @@ geht dabei sparsam mit antraege.gruene.de um:
 |---|---|---|
 | stündlich | **Prüfung** (`antragshelper check`): Seite 1 des Aktivitäts-Protokolls und beobachtete Links, verglichen mit `static/stand.json` der veröffentlichten Seite | 1 + je 1 pro Link in `beobachtet.txt` |
 | nur bei Änderung | **Neubau**: Startseite, Aktivitäts-Protokoll, Quorum-Zahlen **nur für neue** Mitglieder-Anträge (ältere gelten 7 Tage) | ca. 6 + neue Anträge |
-| nachts, bei Push, auf Knopfdruck | Sicherheits-Build (z. B. für zurückgezogene Anträge, die nicht im Protokoll stehen) | wie Neubau |
+| nachts, auf Knopfdruck, bei Push **mit Code-Änderungen** | Sicherheits-Build (z. B. für zurückgezogene Anträge, die nicht im Protokoll stehen) | wie Neubau |
+
+Reine Doku-Änderungen (README, `docs/`, Konzept, Tests, Workflow) lösen beim Push **keinen** Abruf aus –
+nur Änderungen an `antragshelper/`, `pyproject.toml` oder `beobachtet.txt`.
 
 Warum nicht die Feeds? `feedall` & Co. sind nach Anlegedatum sortiert und enthalten nur 20 Einträge –
 spät veröffentlichte Änderungsanträge tauchen dort nicht auf. Das Aktivitäts-Protokoll ist kleiner

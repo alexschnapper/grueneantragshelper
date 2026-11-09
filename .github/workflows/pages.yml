@@ -6,9 +6,16 @@ name: GitHub Pages
 #   pro Link in beobachtet.txt), verglichen mit static/stand.json der veröffentlichten Seite
 # - Neubau nur bei Änderung; Quorum-Zahlen werden inkrementell geholt (nur neue Anträge)
 # - einmal nachts ein Sicherheits-Build für Änderungen, die nicht im Protokoll stehen
+# - Push löst nur bei Code-Änderungen einen Build aus (Positivliste unten). Reine Doku-
+#   Änderungen (README, docs/, KONZEPT.md, CLAUDE.md, Tests, dieser Workflow) erzeugen
+#   keine Abrufe; sie werden mit dem nächsten regulären Lauf sichtbar.
 on:
   push:
     branches: [main]
+    paths:
+      - "antragshelper/**"
+      - "pyproject.toml"
+      - "beobachtet.txt"
   schedule:
     - cron: "23 * * * *"   # Prüfung
     - cron: "41 2 * * *"   # nächtlicher Sicherheits-Build
