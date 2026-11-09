@@ -13,13 +13,18 @@
 * { box-sizing: border-box; }
 body { margin: 0; font: 16px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--fg); }
 a { color: var(--green); }
-header { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; padding: 12px 16px; border-bottom: 3px solid var(--green-light); }
+/* Kopfbereich: Marke, Menü (Pills), Suche; aria-current markiert die aktive Seite */
+.site-header { border-bottom: 1px solid var(--line); }
+.header-inner { max-width: 1000px; margin: 0 auto; padding: 14px 16px; display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+.main-nav { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+.main-nav a { padding: 6px 14px; border-radius: 999px; color: var(--muted); text-decoration: none; white-space: nowrap; transition: color .15s, background-color .15s; }
+.main-nav a:hover { color: var(--fg); background: color-mix(in srgb, var(--fg) 6%, transparent); }
+.main-nav a[aria-current="page"] { color: var(--fg); font-weight: 600; background: color-mix(in srgb, var(--green-light) 28%, transparent); }
 .brand { font-weight: 700; font-size: 1.15rem; text-decoration: none; }
 .brand small { color: var(--muted); font-weight: 400; }
 .search { display: flex; flex: 1 1 320px; gap: 8px; }
 .search input { flex: 1; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; font: inherit; background: transparent; color: inherit; }
 button { padding: 8px 14px; border: 0; border-radius: 6px; background: var(--green); color: #fff; font: inherit; cursor: pointer; }
-nav a { margin-right: 12px; }
 main { max-width: 1000px; margin: 0 auto; padding: 16px; }
 footer { max-width: 1000px; margin: 32px auto; padding: 0 16px; color: var(--muted); font-size: .85rem; }
 section { margin-bottom: 32px; }
@@ -122,3 +127,4 @@ td.path { word-break: break-all; font-size: .85rem; }
 .snippet { width: 100%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; font: inherit; color: var(--fg); background: var(--bg); }
 .warnings { padding-left: 0; list-style: none; }
 .warnings li { padding: 8px 0; border-bottom: 1px solid var(--line); }
+

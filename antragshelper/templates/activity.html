@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% set active_page = "aktivitaet" %}
 {% block title %}Aktivität{% endblock %}
 {% block content %}
 <h1>Aktivitäts-Protokoll <small class="count">{{ total }} Einträge · {{ groups|length }} {{ "Antrag" if groups|length == 1 else "Anträge" }}</small></h1>

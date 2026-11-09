@@ -45,6 +45,9 @@ def test_build_site_offline(tmp_path, monkeypatch):
     assert (out / ".nojekyll").exists()
     index = json.loads((out / "static" / "suchindex.json").read_text(encoding="utf-8"))
     assert index["prefixes"]["VR-02-284"] == "antrag/chancen-antrag-2--201.html"
+    # Hauptmenü markiert die aktive Seite (Übersicht/Transparenz), Unterseiten ohne Markierung
+    assert '<a href="index.html" aria-current="page">Übersicht</a>' in (out / "index.html").read_text(encoding="utf-8")
+    assert 'aria-current="page">Transparenz</a>' in (out / "transparenz.html").read_text(encoding="utf-8")
     # Nur Startseite und Aktivitäts-Protokoll, keine Einzelseiten ohne --details
     assert all("activitylog" in u or u.endswith("/52bdk") for u in requested)
 
