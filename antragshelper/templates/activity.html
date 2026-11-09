@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Aktivität{% endblock %}
+{% block content %}
+<h1>Aktivitäts-Protokoll <small class="count">{{ total }} Einträge · {{ groups|length }} {{ "Antrag" if groups|length == 1 else "Anträge" }}</small></h1>
+
+<form class="filters" {% if not static %}method="get" action="/aktivitaet"{% endif %}>
+  <label>Typ
+    <select name="typ" {{ 'data-typ-select' if static }}>
+      <option value="" {{ 'selected' if not f.typ }}>alle</option>
+      <option value="antrag" {{ 'selected' if f.typ == 'antrag' }}>Anträge</option>
+      <option value="aenderungsantrag" {{ 'selected' if f.typ == 'aenderungsantrag' }}>Änderungsanträge</option>
+    </select></label>
+  <label>Text <input name="text" value="{{ f.text }}" placeholder="z. B. W-04" {{ 'data-filter-input' if static }}></label>
+  {% if not static %}
+  <label>Zeitraum
+    <select name="seiten">
+      {% for n in range(1, max_pages + 1) %}<option value="{{ n }}" {{ 'selected' if f.seiten == n }}>neueste {{ n }} Seite{{ 'n' if n > 1 }}</option>{% endfor %}
+    </select></label>
+  <button>Filtern</button> <a href="/aktivitaet">zurücksetzen</a>
+  {% endif %}
+</form>
+
+<div class="groups">
+{% for g in groups %}
+  <details class="group" data-group>
+    <summary>
+      <span class="when">{{ g.latest.when }}</span>
+      <span class="motion">{{ g.motion }}</span>
+      <span class="badges">
+        {% if g.amendment_count %}<span class="badge">{{ g.amendment_count }} Änderungsantr{{ 'ag' if g.amendment_count == 1 else 'äge' }}</span>{% endif %}
+        {% if g.entries|length > g.amendment_count %}<span class="badge alt">Antrag</span>{% endif %}
+      </span>
+    </summary>
+    <p><a href="{{ href('auswertung', url=g.motion_url) }}">Auswertung zum Antrag</a></p>
+    <table>
+      <tbody>
+      {% for e in g.entries %}
+        <tr data-filter="{{ (g.motion ~ ' ' ~ e.action)|lower }}" data-typ="{{ 'aenderungsantrag' if e.is_amendment else 'antrag' }}"><td class="when">{{ e.when }}</td><td><a href="{{ href('auswertung', url=e.url) }}">{{ e.action }}</a></td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </details>
+{% else %}
+  <p>Keine Einträge für diesen Filter.</p>
+{% endfor %}
+</div>
+<p class="hint">Es werden höchstens {{ max_pages }} Seiten des Protokolls abgerufen (5 Minuten zwischengespeichert). Handelnde Personen werden nicht angezeigt.</p>
+{% endblock %}

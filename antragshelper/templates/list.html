@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ heading }}{% endblock %}
+
+{% macro motion_table(rows) -%}
+<table>
+  <thead><tr><th>Kürzel</th><th>Titel</th><th>Status</th>{% if not f.top %}<th>Tagesordnungspunkt</th>{% endif %}<th class="num">Frauen&shy;anteil</th></tr></thead>
+  <tbody>
+  {% for e in rows %}
+    <tr class="{{ 'withdrawn' if e.withdrawn }}" data-filter="{{ (e.prefix ~ ' ' ~ e.title)|lower }}">
+      <td><a href="{{ href('auswertung', url=e.url) }}">{{ e.prefix }}</a></td>
+      <td>{{ e.title }}</td>
+      <td><span class="status {{ 'status-withdrawn' if e.withdrawn else 'status-ok' }}">{{ e.status }}</span></td>
+      {% if not f.top %}<td>{{ e.agenda_item }}</td>{% endif %}
+      <td class="num">{{ e.women_share ~ ' %' if e.women_share is not none else '–' }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{%- endmacro %}
+
+{% block content %}
+<h1>{{ heading }} <small class="count">{{ total }}</small></h1>
+{% if f.top %}<p class="kind">{{ f.top }}</p>{% endif %}
+
+<form class="filters" {% if static %}data-pages="{{ list_pages|tojson|forceescape }}"{% else %}method="get" action="/liste"{% endif %}>
+  <label>Art
+    <select name="art">
+      <option value="" {{ 'selected' if not f.art }}>alle</option>
+      <option value="antraege" {{ 'selected' if f.art == 'antraege' }}>Anträge</option>
+      <option value="aenderungsantraege" {{ 'selected' if f.art == 'aenderungsantraege' }}>Änderungsanträge</option>
+    </select></label>
+  <label>Tagesordnungspunkt
+    <select name="top">
+      <option value="">alle</option>
+      {% for name in agenda_items %}<option value="{{ name }}" {{ 'selected' if f.top == name }}>{{ name }}</option>{% endfor %}
+    </select></label>
+  <label>Stand
+    <select name="stand">
+      <option value="" {{ 'selected' if not f.stand }}>alle</option>
+      <option value="aktiv" {{ 'selected' if f.stand == 'aktiv' }}>eingereicht</option>
+      <option value="zurueckgezogen" {{ 'selected' if f.stand == 'zurueckgezogen' }}>zurückgezogen</option>
+    </select></label>
+  <label>Text <input name="text" value="{{ f.text }}" placeholder="Kürzel oder Titel" {{ 'data-filter-input' if static }}></label>
+  {% if not static %}<button>Filtern</button>{% endif %} <a href="{{ href('liste') }}">zurücksetzen</a>
+</form>
+
+{% if motions or withdrawn_motions %}
+<section>
+  {% if amendment_groups %}<h2>Anträge</h2>{% endif %}
+  {% if motions %}{{ motion_table(motions) }}{% endif %}
+  {% if withdrawn_motions %}
+  <h3 class="withdrawn-heading">Zurückgezogen ({{ withdrawn_motions|length }})</h3>
+  {{ motion_table(withdrawn_motions) }}
+  {% endif %}
+</section>
+{% endif %}
+
+{% if amendment_groups %}
+<section>
+  {% if motions or withdrawn_motions %}<h2>Änderungsanträge</h2>{% endif %}
+  <div class="groups">
+  {% for g in amendment_groups %}
+    <details class="group{{ ' group-withdrawn' if not g.active_count }}" data-filter="{{ (g.label ~ ' ' ~ g.entries|map(attribute='prefix')|join(' '))|lower }}">
+      <summary>
+        <span class="motion">{{ g.label }}</span>
+        <span class="badges">
+          {% if g.active_count %}<span class="badge">{{ g.active_count }} eingereicht</span>{% endif %}
+          {% if g.withdrawn_count %}<span class="badge alt">{{ g.withdrawn_count }} zurückgezogen</span>{% endif %}
+        </span>
+      </summary>
+      {% if g.motion %}<p><a href="{{ href('auswertung', url=g.motion.url) }}">Auswertung zum Antrag {{ g.motion.prefix }}</a>{% if not f.top %} · {{ g.motion.agenda_item }}{% endif %}</p>{% endif %}
+      <table>
+        <tbody>
+        {% for e in g.entries %}
+          <tr class="{{ 'withdrawn' if e.withdrawn }}">
+            <td><a href="{{ href('auswertung', url=e.url) }}">{{ e.prefix }}</a>{% if not g.motion %} {{ e.title }}{% endif %}</td>
+            <td><span class="status {{ 'status-withdrawn' if e.withdrawn else 'status-ok' }}">{{ e.status }}</span></td>
+            <td class="num">{{ 'Frauenanteil ' ~ e.women_share ~ ' %' if e.women_share is not none else '' }}</td>
+          </tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    </details>
+  {% endfor %}
+  </div>
+</section>
+{% endif %}
+
+{% if not total %}<p>Keine Einträge für diesen Filter.</p>{% endif %}
+<p class="hint">Nur veröffentlichte Einträge der Tagesordnung. Der Frauenanteil wird auf antraege.gruene.de nur bei (Änderungs-)Anträgen von Mitgliedern angezeigt.</p>
+{% endblock %}

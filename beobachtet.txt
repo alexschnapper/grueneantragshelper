@@ -1,0 +1,9 @@
+# Direktlinks zu (Änderungs-)Anträgen in der Sammelphase, eine URL pro Zeile.
+# Sie sind auf antraege.gruene.de nicht öffentlich gelistet; die GitHub-Pages-Seite zeigt
+# ihren Stand unter „Brauchen noch Unterstützung“.
+#
+# Achtung: Diese Datei ist im öffentlichen Repo sichtbar. Nur Links eintragen, die die
+# Antragsteller*innen selbst öffentlich teilen.
+#
+# Beispiel:
+# https://antraege.gruene.de/52bdk/<antrag-slug>/<id>

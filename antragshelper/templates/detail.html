@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% from "_quorum.html" import bar, summary %}
+{% block title %}{{ entry.prefix if entry else 'Auswertung' }}{% endblock %}
+{% block content %}
+<section>
+  <p class="kind">{{ 'Änderungsantrag' if detail.kind == 'amendment' else 'Antrag' }}{% if entry %} · {{ entry.agenda_item }}{% endif %}</p>
+  <h1>{{ detail.title }}</h1>
+  <p><a class="source" href="{{ detail.url }}" target="_blank" rel="noopener">Original auf antraege.gruene.de ↗</a>
+    {% if detail.parent_url %} · zu <a href="{{ href('auswertung', url=detail.parent_url) }}">{{ detail.parent_title }}</a>{% endif %}</p>
+
+  <dl class="facts">
+    <dt>Status</dt><dd>{{ detail.status or '–' }}{% if entry and entry.withdrawn %} (zurückgezogen){% endif %}</dd>
+    {% if detail.women_share is not none %}<dt>Frauenanteil</dt><dd>{{ detail.women_share }} %</dd>{% endif %}
+    {% if detail.supporter_count is not none %}<dt>Mitantragsteller*innen</dt><dd>{{ detail.supporter_count }}</dd>{% endif %}
+  </dl>
+</section>
+
+<section>
+  <h2>Quorum</h2>
+  {% set q = detail.quorum %}
+  {% if q is none %}
+    <p>Keine Sammelphase: Der Antrag ist eingereicht oder wurde von einem Gremium gestellt.</p>
+  {% elif q.reached %}
+    <p>{{ summary(q) }} – jetzt muss nur noch die Antragsteller*in die Einreichung bestätigen.</p>
+  {% else %}
+    <table class="quorum">
+      <thead><tr><th></th><th class="num">nötig</th><th class="num">Stand</th><th class="num">fehlen</th><th></th></tr></thead>
+      <tbody>
+        <tr><th>Gesamt</th><td class="num">{{ q.min_total }}</td><td class="num">{{ q.current_total }}</td><td class="num">{{ q.missing_total }}</td><td>{{ bar(q.progress_total, 'gesamt') }}</td></tr>
+        {% if q.min_women is not none %}
+        <tr><th>Frauen</th><td class="num">{{ q.min_women }}</td><td class="num">{{ q.current_women }}</td><td class="num">{{ q.missing_women }}</td><td>{{ bar(q.progress_women, 'Frauen') }}</td></tr>
+        {% endif %}
+      </tbody>
+    </table>
+    <p class="result">Noch {{ summary(q) }}.
+      {% if q.min_women is not none %}Nur noch <strong>{{ q.open_any_gender }}</strong> Plätze können von Personen beliebigen Geschlechts besetzt werden.{% endif %}</p>
+  {% endif %}
+
+  {% if static %}
+  <p class="static-note">Beobachten und Verlauf gibt es nur in der lokal ausgeführten App (siehe GitHub).</p>
+  {% else %}
+  <form method="post" action="/beobachten">
+    <input type="hidden" name="url" value="{{ detail.url }}">
+    <input type="hidden" name="title" value="{{ detail.title }}">
+    {% if watched %}
+      <input type="hidden" name="remove" value="true"><button>Nicht mehr beobachten</button>
+    {% else %}
+      <button>Beobachten</button>
+    {% endif %}
+  </form>
+  {% endif %}
+</section>
+
+{% if detail.kind == 'motion' %}
+<section>
+  <h2>Änderungsanträge</h2>
+  <h3>In der Sammelphase (beobachtet)</h3>
+  {% if collecting_amendments %}
+  <table>
+    <thead><tr><th>Änderungsantrag</th><th>Stand</th><th>Frauen</th><th>Es fehlen</th></tr></thead>
+    <tbody>
+    {% for item in collecting_amendments %}
+      <tr>
+        <td><a href="{{ href('auswertung', url=item.url) }}">{{ item.url.rsplit('/', 1)[1] }}</a>
+          {% if item.detail %}<br><small>{{ item.detail.status or '–' }}</small>{% endif %}</td>
+        {% if item.detail and item.detail.quorum %}{% set q = item.detail.quorum %}
+          {% if q.reached %}
+          <td colspan="3">{{ summary(q) }}</td>
+          {% else %}
+          <td>{{ q.current_total }} / {{ q.min_total }}{{ bar(q.progress_total, 'gesamt') }}</td>
+          <td>{% if q.min_women is not none %}{{ q.current_women }} / {{ q.min_women }}{{ bar(q.progress_women, 'Frauen') }}{% else %}–{% endif %}</td>
+          <td>{{ summary(q) }}</td>
+          {% endif %}
+        {% else %}
+          <td colspan="3">{{ item.error or 'keine Sammelphase mehr' }}</td>
+        {% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+  <p class="hint">Änderungsanträge in der Sammelphase sind auf antraege.gruene.de nirgends öffentlich gelistet
+    (auch nicht unter dem Antrag). Sie erscheinen hier, sobald ihr Direktlink {% if static %}in <code>beobachtet.txt</code> im Repo eingetragen
+    oder in der lokalen App beobachtet wurde.{% else %}ins Suchfeld eingefügt und „Beobachten“ gewählt wurde.{% endif %}</p>
+
+  <h3>Veröffentlicht ({{ published_amendments|length }})</h3>
+  {% if published_amendments %}
+  <ul>
+    {% for e in published_amendments %}
+    <li><a href="{{ href('auswertung', url=e.url) }}">{{ e.prefix }}</a>{% if e.withdrawn %} (zurückgezogen){% endif %}
+      {% if e.women_share is not none %}<small>· Frauenanteil {{ e.women_share }} %</small>{% endif %}</li>
+    {% endfor %}
+  </ul>
+  {% else %}
+  <p>Keine.</p>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if history|length > 1 %}
+<section>
+  <h2>Verlauf (lokal gespeichert)</h2>
+  <table>
+    <thead><tr><th>Zeitpunkt</th><th>Status</th><th class="num">gesamt</th><th class="num">Frauen</th></tr></thead>
+    <tbody>
+    {% for s in history %}
+      <tr><td>{{ s.fetched_at|replace('T', ' ') }}</td><td>{{ s.status or '–' }}</td>
+        <td class="num">{{ s.current_total if s.current_total is not none else '–' }}</td>
+        <td class="num">{{ s.current_women if s.current_women is not none else '–' }}</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+{% endblock %}
