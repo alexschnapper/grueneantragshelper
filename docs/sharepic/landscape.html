@@ -1,0 +1,38 @@
+<!doctype html><html lang="de"><head><meta charset="utf-8"><link rel="stylesheet" href="common.css"><style>
+:root { --w: 1200px; --h: 675px; }
+.wrap { padding: 46px 52px 34px; height: 100%; display: grid; grid-template-columns: 1.05fr 1fr; grid-template-rows: 1fr auto; column-gap: 44px; }
+.kicker { font-size: 17px; }
+h1 { font-size: 46px; margin: 14px 0 12px; }
+.sub { font-size: 21px; }
+.card { padding: 20px 24px; margin-top: 24px; }
+.card .label { font-size: 13px; }
+.row { grid-template-columns: 70px 1fr 82px; font-size: 17px; margin-top: 11px; gap: 10px; }
+.bar { height: 12px; }
+.result { font-size: 18px; margin-top: 12px; padding-top: 11px; }
+ul.features { align-self: center; }
+ul.features li { font-size: 20px; margin-bottom: 15px; grid-template-columns: 40px 1fr; }
+ul.features .ico { font-size: 24px; }
+ul.features span.t { font-size: 16px; }
+.foot { grid-column: 1 / -1; padding-top: 16px; display: flex; justify-content: space-between; align-items: flex-end; gap: 30px; }
+.url { font-size: 22px; } .url small { font-size: 15px; }
+.disclaimer { font-size: 13px; max-width: 520px; text-align: right; }
+.ki { top: 18px; right: 18px; font-size: 15px; padding: 6px 12px; }
+</style></head><body><div class="ki">KI-generiert</div><div class="wrap">
+<div><div class="kicker">BDK 2026 · Grüner Antragshelper</div>
+<h1>Wie viele Unterstützer*innen fehlen noch?</h1>
+<p class="sub">Quorum-Rechner und Statistik für Anträge auf antraege.gruene.de</p>
+<div class="card"><div class="label">Beispiel · Änderungsantrag in der Sammelphase</div>
+  <div class="row"><span>Gesamt</span><div class="bar"><span class="s1" style="width:61.5%"></span></div><b>56 / 91</b></div>
+  <div class="row"><span>Frauen</span><div class="bar"><span class="s2" style="width:47.8%"></span></div><b>22 / 46</b></div>
+  <div class="result">Noch <strong>35 Personen</strong>, davon mindestens <strong>24 Frauen</strong>.</div></div></div>
+<ul class="features">
+  <li><span class="ico">🔎</span><div><b>Kürzel eingeben, z. B. VR-01</b><span class="t">direkt zur Auswertung jedes Antrags</span></div></li>
+  <li><span class="ico">🧮</span><div><b>Quorum auf einen Blick</b><span class="t">Gesamt- und Frauenquorum, was noch fehlt</span></div></li>
+  <li><span class="ico">📊</span><div><b>Dashboard</b><span class="t">Anträge je TOP, Frauenanteil, Puffer über dem Quorum</span></div></li>
+  <li><span class="ico">🕒</span><div><b>Aktivität gebündelt</b><span class="t">neue Änderungsanträge je Antrag aufklappbar</span></div></li>
+  <li><span class="ico">🛡️</span><div><b>Transparent &amp; sparsam</b><span class="t">jeder Abruf protokolliert, keine Namen gespeichert</span></div></li>
+</ul>
+<div class="foot"><div class="url">alexschnapper.github.io/grueneantragshelper<small>Open Source auf GitHub · ohne Login</small></div>
+<p class="disclaimer">Inoffizielles, ehrenamtliches Projekt – keine Anwendung von BÜNDNIS&nbsp;90/DIE&nbsp;GRÜNEN.
+Daten von antraege.gruene.de (Antragsgrün). MVP ohne Gewähr.</p></div>
+</div></body></html>
