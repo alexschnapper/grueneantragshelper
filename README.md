@@ -108,6 +108,14 @@ prüft stündlich mit einem einzigen kleinen Abruf und baut nur bei Änderungen 
 wann und warum abgerufen wurden, steht auf der Seite
 [Transparenz](https://alexschnapper.github.io/grueneantragshelper/transparenz.html).
 
+## 📣 Teilen
+
+Fertige Sharepics (KI-generiert, als inoffiziell gekennzeichnet) liegen in [`docs/sharepic/`](docs/sharepic/):
+[Hochformat 1080 × 1350](docs/sharepic/sharepic-1080x1350.png) für Instagram/Facebook und
+[Querformat 1200 × 675](docs/sharepic/sharepic-1200x675.png) für Mastodon, Bluesky, LinkedIn und X.
+
+<img src="docs/sharepic/sharepic-1200x675.png" alt="Sharepic: Wie viele Unterstützer*innen fehlen noch?" width="600">
+
 ## 💚 Danke
 
 Ein großes Dankeschön an die Entwickler*innen von **[Antragsgrün](https://github.com/CatoTH/antragsgruen)**,
