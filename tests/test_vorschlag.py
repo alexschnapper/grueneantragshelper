@@ -132,3 +132,12 @@ def test_icons_liegen_bei_und_sind_harmlos():
         svg = (icons / f"{name}.svg").read_text(encoding="utf-8")
         assert svg.startswith("<svg") and "<script" not in svg and "href" not in svg
     assert "CC0" in (icons / "LICENSE.md").read_text(encoding="utf-8")
+
+
+def test_beobachtungsliste_im_repo_ist_gueltig():
+    # Direkt in GitHub bearbeitete Einträge laufen nicht durchs Formular: hier dieselbe Regel, damit der PR rot wird
+    links = build.read_watch_file(Path(__file__).parent.parent / "beobachtet.txt")
+    fehler = [(link, f) for link in links if (f := vorschlag.pruefe(link, KONFERENZ, "52BDK"))]
+    assert fehler == [], "Ungültige Zeilen in beobachtet.txt"
+    doppelt = {link for link in links if links.count(link) > 1}
+    assert not doppelt, f"Doppelt in beobachtet.txt: {doppelt}"
