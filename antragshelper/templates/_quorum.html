@@ -48,10 +48,13 @@
 {# Teilen-Buttons für ein Textfeld (id = quelle). „Teilen …“ nutzt das Teilen-Menü des Geräts und wird per
    JavaScript nur eingeblendet, wenn der Browser es kann. Import mit „with context“ (braucht href). #}
 {% macro teilen(quelle, betreff) -%}
-<span class="teilen" data-quelle="{{ quelle }}" data-betreff="{{ betreff }}">
+<span class="teilen" data-quelle="{{ quelle }}" data-betreff="{{ betreff }}"
+      data-instanz="{{ settings.mastodon_instanz }}" data-hashtags="{{ settings.teilen_hashtags }}">
   <button type="button" class="zweit" data-teilen="system" hidden>{{ icon(href('static', path='icons/teilen.svg')) }}Teilen …</button>
   <button type="button" class="zweit" data-teilen="threema">{{ icon(href('static', path='icons/threema.svg')) }}Threema</button>
   <button type="button" class="zweit" data-teilen="signal">{{ icon(href('static', path='icons/signal.svg')) }}Signal</button>
+  <button type="button" class="zweit" data-teilen="mastodon" title="Teilen über {{ settings.mastodon_instanz }}">{{ icon(href('static', path='icons/mastodon.svg')) }}Mastodon</button>
+  <button type="button" class="textknopf" data-teilen="instanz">andere Instanz?</button>
   <button type="button" class="zweit" data-teilen="mail">{{ icon(href('static', path='icons/mail.svg')) }}Mail</button>
 </span>
 <span class="teilen-hinweis" role="status"></span>

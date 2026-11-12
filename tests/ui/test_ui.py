@@ -116,3 +116,31 @@ def test_handy_ohne_waagerechtes_scrollen(seite, site, pfad):
     seite.goto(site + pfad)
     breite = seite.evaluate("[document.documentElement.scrollWidth, window.innerWidth]")
     assert breite[0] <= breite[1], f"Seite ist {breite[0]} px breit bei {breite[1]} px Bildschirm"
+
+
+def test_mastodon_mit_hashtags_und_eigener_instanz(seite, site):
+    seite.goto(site + DETAIL_ROT)
+    gruppe = seite.locator(".teilen[data-quelle=mobilisierung]")
+    hinweis = seite.locator(".teilen[data-quelle=mobilisierung] + .teilen-hinweis")
+    seite.fill("#mobilisierung", "Bitte mitzeichnen: https://antraege.gruene.de/52bdk/x/1 #BDK52")
+    with seite.context.expect_page() as neu:
+        gruppe.locator("[data-teilen=mastodon]").click()
+    # #BDK52 steht schon da, #BDK (nur ein Teil davon) fehlt noch
+    erwartet = "Bitte mitzeichnen: https://antraege.gruene.de/52bdk/x/1 #BDK52\n\n#BDK #52BDK #Grüne"
+    assert neu.value.url == "https://gruene.social/share?text=" + quote(erwartet, safe="-_.!~*'()")
+
+    gruppe.locator("[data-teilen=instanz]").click()
+    feld = seite.locator(".instanz-form input")
+    assert feld.input_value() == "gruene.social"
+    for falsch in ["🌻", "javascript:alert(1)", "localhost", "zwei worte.social"]:
+        feld.fill(falsch)
+        seite.click(".instanz-form button")
+        expect(hinweis).to_have_text("Nicht gültig – nur der Name der Instanz, z. B. gruene.social")
+    feld.fill(" https://Mastodon.Social/@jemand ")
+    feld.press("Enter")
+    expect(hinweis).to_have_text("Mastodon teilt jetzt über mastodon.social.")
+
+    seite.reload()  # die Wahl merkt sich der Browser
+    with seite.context.expect_page() as neu:
+        seite.locator(".teilen[data-quelle=mobilisierung] [data-teilen=mastodon]").click()
+    assert neu.value.url.startswith("https://mastodon.social/share?text=")

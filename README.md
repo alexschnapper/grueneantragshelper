@@ -110,12 +110,14 @@ weitergeben – geteilt wird der Text, wie er im Feld steht:
 |---|---|
 | **Teilen …** | öffnet das Teilen-Menü des Geräts (Signal, Threema, WhatsApp, Telegram, Mail …) mit fertigem Text; erscheint nur, wo der Browser das kann (vor allem auf dem Handy) |
 | **Threema** | öffnet Threema mit vorausgefülltem Text, die Empfänger*in wird in der App gewählt |
+| **Mastodon** | öffnet das Verfassen-Fenster auf `gruene.social` mit dem Text und den Hashtags `#BDK #52BDK #Grüne #BDK52` (nur die, die noch nicht im Text stehen); **„andere Instanz?“** stellt eine andere Mastodon-Instanz ein, die sich nur der eigene Browser merkt. Über 500 Zeichen gibt es einen Hinweis |
 | **Signal** | kopiert den Text (Signal kann per Link keinen Text vorausfüllen) – im Chat einfügen |
 | **Mail** | öffnet das Mailprogramm mit Betreff und Text |
 
 **Sharepic**: „Sharepic erstellen“ zeigt unter dem Mobilisierungs-Text ein Bild (1080 × 1350) mit fehlenden
 Personen und Frauen, Fortschritt, Stand, Antragsschluss und QR-Code zum Original. Es lässt sich als PNG oder SVG
-herunterladen und – wo das Gerät es kann – mit **„Bild teilen …“** direkt an Signal, Threema oder WhatsApp schicken.
+herunterladen und – wo das Gerät es kann – mit **„Bild teilen …“** direkt an Signal, Threema, WhatsApp oder die Mastodon-App schicken (dort als echter Bildanhang – ein Teilen-Link kann
+kein Bild mitgeben).
 
 **Tests**: Bei jedem Pull Request und jedem Push auf `main` laufen über
 [`.github/workflows/tests.yml`](.github/workflows/tests.yml) die Python-Tests und die Browser-Tests (Playwright,
