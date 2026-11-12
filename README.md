@@ -64,7 +64,8 @@ python3 -m venv .venv
 | `.venv/bin/python -m antragshelper server` | Web-App auf <http://localhost:8000> (mit Beobachten und Verlauf) |
 | `.venv/bin/python -m antragshelper zeige VR-01` | Auswertung direkt im Terminal (Kürzel oder Link) |
 | `.venv/bin/python -m antragshelper build --out _site` | Statische Seite erzeugen (wie auf GitHub Pages) |
-| `.venv/bin/pytest` | Tests ausführen |
+| `.venv/bin/pytest` | Tests ausführen (ohne Browser) |
+| `.venv/bin/pytest -m ui` | Browser-Tests mit Playwright (einmalig: `pip install -e '.[dev,ui]'` und `python -m playwright install chromium`) |
 
 Optionen für `build`:
 
@@ -115,6 +116,12 @@ weitergeben – geteilt wird der Text, wie er im Feld steht:
 **Sharepic**: „Sharepic erstellen“ zeigt unter dem Mobilisierungs-Text ein Bild (1080 × 1350) mit fehlenden
 Personen und Frauen, Fortschritt, Stand, Antragsschluss und QR-Code zum Original. Es lässt sich als PNG oder SVG
 herunterladen und – wo das Gerät es kann – mit **„Bild teilen …“** direkt an Signal, Threema oder WhatsApp schicken.
+
+**Tests**: Bei jedem Pull Request und jedem Push auf `main` laufen über
+[`.github/workflows/tests.yml`](.github/workflows/tests.yml) die Python-Tests und die Browser-Tests (Playwright,
+Chromium). Die Browser-Tests bauen aus den Testdaten eine statische Seite und prüfen sie wie ein Mensch: keine
+Fehler oder fehlenden Dateien, Icons, Prüfung beim Vorschlagen, Ampel, Teilen-Buttons, Sharepic als PNG und die
+Darstellung auf dem Handy. Keiner der Tests ruft antraege.gruene.de ab.
 
 ## 🌐 GitHub Pages
 

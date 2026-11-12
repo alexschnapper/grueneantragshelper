@@ -12,6 +12,8 @@ Local web app (German UI) that scrapes public pages of antraege.gruene.de (an [A
 python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'   # setup (Python >= 3.9)
 .venv/bin/pytest                                             # all tests
 .venv/bin/pytest tests/test_parsers.py::test_index_counts_and_lookup   # single test
+.venv/bin/pip install -e '.[dev,ui]' && .venv/bin/python -m playwright install chromium   # browser tests setup
+.venv/bin/pytest -m ui                                       # browser tests (Playwright, excluded by default)
 .venv/bin/python -m antragshelper server                     # web UI on localhost:8000
 .venv/bin/python -m antragshelper zeige VR-01                # CLI evaluation (prefix or URL)
 .venv/bin/python -m antragshelper build --out _site [--details] [--beobachten beobachtet.txt] [--vorher stand.json]   # static site
@@ -42,6 +44,8 @@ Key facts about the data source:
 - The consultation-wide quorum (e.g. 91 / 46) is parsed from the start page text (`#stdTextHolder`). Submitter type: "dort beschlossen" = Gremium, a shown women share = Mitglieder.
 - Activity log dates are relative ("Heute, 12:20", "Gestern, …") or `dd.mm.yyyy`; see `ActivityEntry.day`.
 - Feeds only contain the latest 20 items — never use them for counting.
+
+CI: `.github/workflows/tests.yml` runs `pytest` and `pytest -m ui` on every PR and push to main. Browser tests (`tests/ui`, marker `ui`, excluded via `addopts`) build a static site from fixtures inside the test session (httpx faked, external URLs intercepted in the browser) — they never fetch antraege.gruene.de. They cover console errors/404s on all page types, icon loading, suggestion validation, traffic light, share buttons, sharepic PNG and phone width; add one when changing JavaScript or layout. Both jobs are required checks for merging into `main` (branch protection). PRs opened by `antrag-vorschlagen.yml` use `GITHUB_TOKEN`, which does not trigger workflows: close and reopen such a PR to start the tests.
 
 ## Constraints
 

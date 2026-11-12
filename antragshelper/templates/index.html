@@ -59,7 +59,7 @@
            placeholder="{{ settings.consultation_url }}/<antrag>/<id>" aria-describedby="vorschlag-meldung vorschlag-hinweis">
     <div class="vorschlag-wege actions">
       <button name="ziel" value="github">{{ icon(href('static', path='icons/github.svg')) }}Per GitHub vorschlagen</button>
-      {% if settings.vorschlag_mail %}<button class="zweit" name="ziel" value="mail" data-adresse="{{ settings.vorschlag_mail }}">Per Mail</button>{% endif %}
+      {% if settings.vorschlag_mail %}<button class="zweit" name="ziel" value="mail" data-adresse="{{ settings.vorschlag_mail }}">{{ icon(href('static', path='icons/mail.svg')) }}Per Mail</button>{% endif %}
       {% if settings.vorschlag_threema %}<button class="zweit" name="ziel" value="threema" data-adresse="{{ settings.vorschlag_threema }}">{{ icon(href('static', path='icons/threema.svg')) }}Per Threema</button>{% endif %}
       {% if settings.vorschlag_signal %}<button class="zweit" name="ziel" value="signal" data-adresse="{{ settings.vorschlag_signal }}">{{ icon(href('static', path='icons/signal.svg')) }}Per Signal</button>{% endif %}
     </div>
