@@ -21,6 +21,8 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pyyaml>=6"]
+# Browser-Tests (tests/ui): zusätzlich `python -m playwright install chromium`
+ui = ["pytest-playwright>=0.5"]
 
 [project.scripts]
 antragshelper = "antragshelper.__main__:main"
@@ -33,3 +35,6 @@ antragshelper = ["templates/*.html", "templates/*.svg", "templates/*.xml", "stat
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+# Browser-Tests laufen nur mit `pytest -m ui` (eigener CI-Job), nicht im Pages-Build
+addopts = "-m 'not ui'"
+markers = ["ui: Browser-Tests mit Playwright gegen eine statische Seite aus den Testdaten"]
