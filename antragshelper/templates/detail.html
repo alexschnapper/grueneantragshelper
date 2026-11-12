@@ -73,7 +73,8 @@
     {% if mobilisierung %}
     <h3>Mobilisierungs-Text</h3>
     <textarea id="mobilisierung" class="snippet" rows="4" aria-label="Mobilisierungs-Text">{{ mobilisierung }}</textarea>
-    <p><button type="button" data-copy="mobilisierung">In die Zwischenablage kopieren</button>
+    <p class="actions"><button type="button" data-copy="mobilisierung">In die Zwischenablage kopieren</button>
+      <a class="button-secondary" href="{{ href('sharepic', url=detail.url) }}">Sharepic erstellen</a>
       <small class="hint">Für Signal, WhatsApp oder Mail – vor dem Senden anpassbar.</small></p>
     {% endif %}
 
