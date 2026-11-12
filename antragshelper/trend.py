@@ -12,8 +12,11 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 from typing import Optional, Sequence
 
-# Rollierendes Fenster für das Sammeltempo; bei kürzerem Verlauf zählt der ganze Verlauf
+# Rollierende Fenster für das Sammeltempo; bei kürzerem Verlauf zählt der ganze Verlauf. Gerechnet wird
+# vorsichtig mit dem langsameren der beiden Tempi: Sammeln läuft in Schüben (Aufruf, dann Abflachen),
+# ein kurzer Schub soll nicht über Tage hochgerechnet werden
 FENSTER = timedelta(hours=24)
+FENSTER_LANG = timedelta(hours=72)
 # Kürzer beobachtet ergibt kein belastbares Tempo
 MIN_BEOBACHTUNG = timedelta(hours=1)
 # Eine Ampel erst ab so viel Verlauf (oder so viel, wie bis zur Frist bleibt) – sonst wird z. B.
@@ -23,11 +26,13 @@ BELASTBAR_AB = timedelta(hours=12)
 GRUEN_AB = 1.10
 GELB_AB = 0.90
 
-# Ab hier warnt die App auch ohne gelbe/rote Ampel, solange noch Personen fehlen
+# Ab hier warnt die App auch ohne gelbe/rote Ampel, solange noch Personen fehlen; fehlen Frauen,
+# früher, weil Frauennetzwerke (LAG, Frauenrat) Zeit zum Weiterleiten brauchen
 WARNUNG_VOR_FRIST = timedelta(hours=48)
+WARNUNG_VOR_FRIST_FRAUEN = timedelta(hours=72)
 
 GRUEN, GELB, ROT = "gruen", "gelb", "rot"
-FRIST = "frist"  # Warnstufe: weniger als 48 Stunden bis Fristende, Prognose noch vorläufig
+FRIST = "frist"  # Warnstufe: Frist naht (48 bzw. 72 Stunden), Prognose noch vorläufig
 WARNSTUFEN = {ROT: "Rot · Scheitern droht", GELB: "Gelb · gefährdet", FRIST: "Frist läuft ab"}
 
 
@@ -67,6 +72,17 @@ def tempo(verlauf: Sequence[Stand], aktuell: Stand, fenster: timedelta = FENSTER
     if aktuell.frauen is not None and start.frauen is not None:
         frauen = (aktuell.frauen - start.frauen) / stunden
     return Tempo((aktuell.gesamt - start.gesamt) / stunden, frauen, stunden, seit_beginn)
+
+
+def vorsichtiges_tempo(verlauf: Sequence[Stand], aktuell: Stand) -> Optional[Tempo]:
+    """Das jeweils langsamere Tempo aus 24- und 72-Stunden-Fenster (gesamt und Frauen getrennt)."""
+    kurz, lang = tempo(verlauf, aktuell, FENSTER), tempo(verlauf, aktuell, FENSTER_LANG)
+    if kurz is None or lang is None:
+        return kurz or lang
+    frauen = None
+    if kurz.frauen is not None and lang.frauen is not None:
+        frauen = min(kurz.frauen, lang.frauen)
+    return Tempo(min(kurz.gesamt, lang.gesamt), frauen, lang.stunden, lang.seit_beginn)
 
 
 @dataclass(frozen=True)
@@ -130,6 +146,7 @@ class Trend:
     tempo: Optional[Tempo]
     gesamt: Hochrechnung
     frauen: Optional[Hochrechnung]
+    ampel_ab: Optional[datetime] = None  # ab wann es eine Ampel gibt, solange der Verlauf zu kurz ist
 
     @property
     def massgeblich(self) -> Hochrechnung:
@@ -138,18 +155,28 @@ class Trend:
 
     @property
     def ampel(self) -> Optional[str]:
-        """Ampel des Frauenquorums; Rot auch, wenn das Gesamttempo rechnerisch nicht mehr reicht."""
-        return ROT if self.gesamt.verfehlt else self.massgeblich.ampel
+        """Der schlechteste Stand beider Quoren (Rot vor Gelb vor „noch keine Ampel“ vor Grün);
+        Rot auch, wenn das Gesamtquorum bei diesem Tempo nicht erreicht wird."""
+        if self.gesamt.verfehlt:
+            return ROT
+        teile = [self.gesamt.ampel] + ([self.frauen.ampel] if self.frauen is not None else [])
+        for stufe in (ROT, GELB, None):
+            if stufe in teile:
+                return stufe
+        return GRUEN
 
     @property
     def warnstufe(self) -> Optional[str]:
-        """Rot/Gelb wie die Ampel; FRIST, wenn weniger als 48 Stunden bleiben und die Ampel nicht grün ist."""
+        """Rot/Gelb wie die Ampel; FRIST, wenn die Frist naht (72 Stunden, falls Frauen fehlen, sonst 48)
+        und die Ampel nicht grün ist."""
         if self.ampel in (GELB, ROT):
             return self.ampel
-        offen = self.gesamt.bedarf or (self.frauen is not None and self.frauen.bedarf)
+        frauen_fehlen = self.frauen is not None and self.frauen.bedarf > 0
+        if not (self.gesamt.bedarf or frauen_fehlen) or self.ampel == GRUEN:
+            return None
+        vorlauf = WARNUNG_VOR_FRIST_FRAUEN if frauen_fehlen else WARNUNG_VOR_FRIST
         restzeit = self.gesamt.restzeit
-        if (offen and self.ampel != GRUEN and restzeit is not None
-                and 0 < restzeit <= WARNUNG_VOR_FRIST.total_seconds() / 3600):
+        if restzeit is not None and 0 < restzeit <= vorlauf.total_seconds() / 3600:
             return FRIST
         return None
 
@@ -202,8 +229,8 @@ class Trend:
 
 
 def hochrechnen(verlauf: Sequence[Stand], aktuell: Stand, min_gesamt: int, min_frauen: Optional[int],
-                frist: Optional[datetime], fenster: timedelta = FENSTER) -> Trend:
-    t = tempo(verlauf, aktuell, fenster)
+                frist: Optional[datetime]) -> Trend:
+    t = vorsichtiges_tempo(verlauf, aktuell)
     restzeit = (frist - aktuell.zeit).total_seconds() / 3600 if frist else None
     noetig = BELASTBAR_AB.total_seconds() / 3600
     if restzeit is not None:
@@ -213,7 +240,17 @@ def hochrechnen(verlauf: Sequence[Stand], aktuell: Stand, min_gesamt: int, min_f
     frauen = None
     if min_frauen is not None and aktuell.frauen is not None:
         frauen = Hochrechnung(min_frauen, aktuell.frauen, t.frauen if t else None, restzeit, belastbar)
-    return Trend(frist, t, gesamt, frauen)
+    return Trend(frist, t, gesamt, frauen, None if belastbar else _ampel_ab(verlauf, aktuell, frist))
+
+
+def _ampel_ab(verlauf: Sequence[Stand], aktuell: Stand, frist: Optional[datetime]) -> Optional[datetime]:
+    """Zeitpunkt, ab dem der Verlauf reicht: 12 Stunden nach dem ersten Stand oder – wenn die Frist
+    vorher naht – sobald der Verlauf so lang ist wie die Restzeit (Mitte zwischen erstem Stand und Frist)."""
+    erste = min((s.zeit for s in verlauf if s.zeit <= aktuell.zeit), default=aktuell.zeit)
+    ab = erste + BELASTBAR_AB
+    if frist is not None:
+        ab = min(ab, erste + (frist - erste) / 2)
+    return max(ab, aktuell.zeit) if frist is None or ab < frist else None
 
 
 def mobilisierung(titel: str, url: str, kind: str, trend: Trend) -> Optional[str]:

@@ -113,3 +113,33 @@ def test_group_amendments():
 def test_index_consultation_quorum():
     index = parse_index(read("home.html"), BASE)
     assert (index.min_total, index.min_women) == (91, 46)
+
+
+def test_auszug_aenderungsantrag_zeigt_die_aenderung():
+    d = parse_detail(read("amendment_collecting.html"), f"{BASE}/52bdk/wasser-antrag-1/999")
+    assert d.text_auszug == "Von Zeile 12 bis 13: Streichen „besser“ · Einfügen „in jeder Kommune konsequent“"
+    assert d.begruendung_auszug == ("Kommunen brauchen klare Ziele, damit Starkregen nicht ungenutzt abfließt "
+                                    "und Böden in Dürrezeiten länger feucht …")
+    assert "Volltext" not in d.text_auszug  # nicht der versteckte Volltext
+    assert "Muster" not in repr(d)
+
+
+def test_auszug_antrag_ohne_zeilennummern_und_lesezeichen():
+    d = parse_detail(read("motion_submitted.html"), f"{BASE}/b")
+    assert d.text_auszug == ("Wasser ist die Grundlage für Landwirtschaft, Natur und unser tägliches Leben. "
+                             "Deshalb wollen wir Wasser …")
+    assert "VR-01-012" not in d.text_auszug
+    assert d.begruendung_auszug == "Trockene Sommer zeigen, wie dringend wir handeln müssen."
+
+
+def test_ohne_text_kein_auszug():
+    d = parse_detail(read("motion_reached.html"), f"{BASE}/a")
+    assert d.text_auszug is None and d.begruendung_auszug is None
+
+
+def test_kuerzen():
+    from antragshelper.parsers import kuerzen
+
+    assert kuerzen("eins zwei drei", 2) == "eins zwei …"
+    assert kuerzen("eins  zwei", 2) == "eins zwei"
+    assert len(kuerzen("wort " * 40).split()) == 16  # 15 Wörter + „…“

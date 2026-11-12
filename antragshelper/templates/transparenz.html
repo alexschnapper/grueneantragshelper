@@ -15,7 +15,8 @@
   <h2>Grundsätze</h2>
   <ul>
     <li>Nur öffentlich verlinkte Seiten, <strong>kein Login</strong>, kein Durchprobieren von IDs.</li>
-    <li>Es werden <strong>keine Namen</strong> und <strong>kein Antragstext</strong> gespeichert – nur Kürzel, Titel, Links und Zahlen.</li>
+    <li>Es werden <strong>keine Namen</strong> gespeichert – nur Kürzel, Titel, Links und Zahlen. Aus Antragstext und Begründung
+      zeigt die App nur <strong>kurze Auszüge</strong> (je höchstens 15 Wörter), ohne sie zu speichern.</li>
     <li>Zwischenspeicher: Startseite und Aktivitäts-Protokoll {{ settings.ttl_index // 60 }} Minuten, Einzelseiten {{ settings.ttl_detail // 60 }} Minuten.</li>
     <li>Einzelseiten für Quorum-Zahlen werden gedrosselt geholt ({{ '%g'|format(stats_delay) }} Seite pro Sekunde) und
       {{ stats_max_age_days }} Tage wiederverwendet.</li>
@@ -37,13 +38,16 @@
       <td>nachts ({{ nightly_utc }} UTC), z. B. für zurückgezogene Anträge, die nicht im Protokoll stehen. Nächster:
         <time data-next-nightly data-utc="{{ nightly_utc }}">{{ next_nightly.strftime('%d.%m. %H:%M') }} Uhr</time></td></tr>
   </table>
+  <p>Der Antragshelper prüft also <strong>automatisch einmal pro Stunde</strong>. Häufiger nicht: Jede Prüfung ruft
+    antraege.gruene.de ab, und für Fristen in Tagen reicht stündlich. Zwischen zwei Prüfungen bleibt die Seite unverändert.</p>
   <p class="hint">GitHub führt geplante Läufe teils mit Verzögerung aus. Prüfungen ohne Änderung erzeugen keinen
     Neubau und erscheinen deshalb nicht unten in der Tabelle, sind aber in den
     <a href="{{ settings.repo_url }}/actions/workflows/pages.yml">GitHub-Actions-Protokollen</a> einsehbar.</p>
   {% else %}
-  <p>Die lokale App ruft <strong>nur bei Bedarf</strong> ab: wenn eine Seite der App geöffnet wird und der
-    Zwischenspeicher abgelaufen ist, oder wenn im Dashboard „Daten abrufen“ gedrückt wird. Es gibt keine
-    Abrufe im Hintergrund.</p>
+  <p>Diese Version des Antragshelpers läuft auf dem eigenen Rechner und ruft <strong>nur bei Bedarf</strong> ab: wenn eine
+    Seite geöffnet wird und der Zwischenspeicher abgelaufen ist, oder wenn im Dashboard „Daten abrufen“ gedrückt wird.
+    Es gibt <strong>keine automatische Prüfung</strong> im Hintergrund – Stände und Verlauf entstehen nur beim Öffnen.
+    Die öffentliche Seite des Antragshelpers prüft dagegen automatisch einmal pro Stunde.</p>
   {% endif %}
 </section>
 
@@ -73,7 +77,7 @@
 {% endif %}
 
 <section class="card">
-  <h2>{{ 'Einzelne Abrufe des letzten Laufs' if static else 'Abrufe seit Start der lokalen App' }} <small class="count">{{ requests|length }}</small></h2>
+  <h2>{{ 'Einzelne Abrufe des letzten Laufs' if static else 'Abrufe seit Start' }} <small class="count">{{ requests|length }}</small></h2>
   {% if requests %}
   <table>
     <thead><tr><th>Zeit</th><th>Warum</th><th>Seite</th><th class="num">Status</th><th class="num">Größe</th><th class="num">Dauer</th></tr></thead>

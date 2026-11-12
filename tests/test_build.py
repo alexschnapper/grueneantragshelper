@@ -55,6 +55,6 @@ def test_build_site_offline(tmp_path, monkeypatch):
         text = html_file.read_text(encoding="utf-8")
         assert "Muster" not in text  # keine Namen aus den Fixtures
         assert "Inoffizielles Projekt" in text
-        for href in re.findall(r'href="([^"#]+)"', text):
+        for href in re.findall(r'href="([^"#?]+)', text):
             if not href.startswith("http"):
                 assert (html_file.parent / href).resolve().exists(), (html_file, href)

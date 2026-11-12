@@ -136,3 +136,42 @@ img.sharepic { display: block; width: 100%; max-width: 432px; height: auto; bord
 .sharepic-box summary { list-style: none; cursor: pointer; }
 .sharepic-box summary::-webkit-details-marker { display: none; }
 .sharepic-box[open] summary { background: color-mix(in srgb, var(--green-light) 15%, transparent); }
+.auszug { margin: 4px 0 0; font-size: .85rem; color: var(--muted); }
+.auszug p { margin: 2px 0; }
+.auszug.gross { margin: 8px 0 16px; padding: 10px 14px; border-left: 3px solid var(--green-light); font-size: .95rem; color: var(--fg);
+  background: color-mix(in srgb, var(--green-light) 8%, transparent); border-radius: 4px; }
+.auszug-label { font-weight: 600; }
+
+/* Ampel: drei Lichter, das zutreffende leuchtet; Text daneben, damit nichts nur an der Farbe hängt */
+.ampel { display: inline-flex; align-items: center; gap: 8px; vertical-align: middle; }
+.lichter { display: inline-flex; gap: 3px; padding: 3px 5px; border-radius: 999px; background: color-mix(in srgb, var(--fg) 82%, transparent); }
+.licht { display: inline-block; width: 10px; height: 10px; border-radius: 50%; opacity: .22; }
+.licht.rot { background: #e5484d; } .licht.gelb { background: #f5c400; } .licht.gruen { background: #46a758; }
+.licht.an { opacity: 1; box-shadow: 0 0 6px currentColor; }
+.licht.rot.an { color: #e5484d; } .licht.gelb.an { color: #f5c400; } .licht.gruen.an { color: #46a758; }
+.ampel-text { font-size: .85rem; font-weight: 600; }
+.ampel.gross .lichter { flex-direction: column; gap: 6px; padding: 8px 7px; }
+.ampel.gross .licht { width: 22px; height: 22px; }
+.ampel.gross .ampel-text { font-size: 1.05rem; }
+.ampel-box { display: flex; gap: 20px; align-items: flex-start; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; margin: 8px 0 16px; }
+.ampel-box p { margin: 4px 0; }
+.erklaerung { margin: 12px 0; }
+.erklaerung summary { cursor: pointer; color: var(--green); font-weight: 600; }
+.legende { list-style: none; padding: 0; }
+.legende li { margin: 6px 0; }
+.legende .licht { opacity: 1; vertical-align: -1px; }
+@media (max-width: 600px) { .ampel-box { flex-direction: column; gap: 10px; } .ampel.gross .lichter { flex-direction: row; } }
+.vorschlag { margin: 16px 0; padding: 14px 16px; border: 1px solid var(--line); border-radius: 10px; }
+.vorschlag input { display: block; width: 100%; margin-top: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 6px; font: inherit; color: var(--fg); background: var(--bg); }
+.vorschlag input[aria-invalid="true"] { border-color: var(--err); }
+.vorschlag-wege { margin-top: 10px; }
+button.zweit { background: transparent; color: var(--green); border: 1px solid var(--green); }
+.vorschlag-meldung.ok { color: var(--green); }
+.vorschlag-meldung { margin: 8px 0 0; font-weight: 600; }
+.prognose-offen { display: inline-flex; flex-wrap: wrap; gap: 4px 8px; align-items: center; }
+.prognose-ab { font-size: .85rem; color: var(--muted); }
+.status-frist { background: color-mix(in srgb, #f5c400 35%, transparent); font-weight: 600; }
+/* Marken-Icons (Simple Icons, CC0) in der Textfarbe des Buttons */
+.icon { display: inline-block; width: 1.1em; height: 1.1em; margin-right: .45em; vertical-align: -.18em; background: currentColor;
+  -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain;
+  -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }

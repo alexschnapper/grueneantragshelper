@@ -1,0 +1,17 @@
+name: Antrag in der Sammelphase vorschlagen
+description: Direktlink zu einem (Änderungs-)Antrag der 52. BDK, der noch Unterstützer*innen sammelt
+title: "Antrag aufnehmen"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Nur Direktlinks von **https://antraege.gruene.de/52bdk/…** (andere Links werden abgelehnt).
+        Eine Prüfung trägt den Link per Pull Request in `beobachtet.txt` ein; nach dem Merge erscheint der Antrag
+        auf der Seite – mit Titel, Zahlen und kurzem Auszug, **ohne Namen**.
+  - type: input
+    id: link
+    attributes:
+      label: Direktlink
+      placeholder: https://antraege.gruene.de/52bdk/<antrag>/<id>
+    validations:
+      required: true

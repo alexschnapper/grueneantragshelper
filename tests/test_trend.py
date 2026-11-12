@@ -128,7 +128,8 @@ def test_service_rechnet_aus_gespeicherten_staenden(tmp_path, monkeypatch):
     detail = Detail(url=URL, title="Änderungsantrag zu VR-02", kind="amendment", quorum=Quorum(91, 46, 52, 19))
     t = helper.hochrechnung(detail, JETZT)
     assert t.frist == datetime(2026, 11, 9, 22, 0)  # eigene Frist für Änderungsanträge
-    assert t.tempo.gesamt == pytest.approx(22 / 24) and t.tempo.frauen == pytest.approx(9 / 24)
+    # vorsichtig: 72-h-Fenster (hier seit Beobachtungsbeginn vor 30 h) ist langsamer als die letzten 24 h
+    assert t.tempo.gesamt == pytest.approx(22 / 30) and t.tempo.frauen == pytest.approx(9 / 30)
     assert t.frauen.ampel == ROT
     assert helper.hochrechnung(Detail(url=URL, title="", kind="motion", quorum=Quorum(91, reached=True))) is None
 
@@ -216,7 +217,9 @@ def test_vorlaeufige_prognose_wird_nicht_angezeigt(tmp_path):
         published_amendments=[], collecting_amendments=[], history=[], watched=True,
         trend=t, mobilisierung=None, zahl=trend.zahl, restzeit_text=trend.restzeit_text,
     )
-    assert "vorläufig · zu wenig Verlauf" in html
+    # Ohne belastbare Prognose: keine leeren Ampel-Lichter, sondern ab wann es eine Prognose gibt
+    assert "Prognose ab ca. 09.11., 20:00 Uhr" in html and 'class="lichter"' not in html
+    assert "Wie wird gerechnet?" in html and "noch keine Ampel" not in html
     assert "– / 46" in html and "157 / 46" not in html
 
 
@@ -286,12 +289,38 @@ def test_warnstufen():
     assert t.warnstufe == ROT
     assert t.warnung == ("Achtung: Gesamtfortschritt bei 74 %, Frauenquorum bei 60 % – noch 18 Frauen nötig "
                          "(insgesamt 23), Frist 11.11.2026, 04:00 Uhr.")
-    # Vorläufige Prognose: erst ab 48 Stunden vor Fristende eine Warnung
+    # Vorläufige Prognose: Warnung ab 72 Stunden vor Fristende, wenn Frauen fehlen, sonst ab 48 Stunden
     kurz = [Stand(vor(4), 56, 22)]
-    assert trend.hochrechnen(kurz, Stand(JETZT, 63, 28), 91, 46, JETZT + timedelta(hours=60)).warnstufe is None
-    assert trend.hochrechnen(kurz, Stand(JETZT, 63, 28), 91, 46, JETZT + timedelta(hours=40)).warnstufe == trend.FRIST
+    assert trend.hochrechnen(kurz, Stand(JETZT, 63, 28), 91, 46, JETZT + timedelta(hours=80)).warnstufe is None
+    assert trend.hochrechnen(kurz, Stand(JETZT, 63, 28), 91, 46, JETZT + timedelta(hours=60)).warnstufe == trend.FRIST
+    nur_gesamt = [Stand(vor(4), 56, 50)]
+    assert trend.hochrechnen(nur_gesamt, Stand(JETZT, 63, 50), 91, 46, JETZT + timedelta(hours=60)).warnstufe is None
+    assert trend.hochrechnen(nur_gesamt, Stand(JETZT, 63, 50), 91, 46, JETZT + timedelta(hours=40)).warnstufe == trend.FRIST
     # Grün auf Kurs oder Quorum erreicht: keine Warnung, auch kurz vor Fristende
     gruen = trend.hochrechnen([Stand(vor(20), 20, 10)], Stand(JETZT, 80, 40), 91, 46, JETZT + timedelta(hours=10))
     assert gruen.ampel == GRUEN and gruen.warnstufe is None and gruen.warnung is None
     erreicht = trend.hochrechnen([], Stand(JETZT, 95, 50), 91, 46, JETZT + timedelta(hours=10))
     assert erreicht.warnstufe is None
+
+
+def test_vorsichtiges_tempo_nimmt_das_langsamere_fenster():
+    # Schub in den letzten 24 h (+24), davor 48 h fast nichts (+2): 24 h -> 1,0/h, 72 h -> 26/72
+    verlauf = [Stand(vor(72), 10, 4), Stand(vor(24), 12, 5)]
+    t = trend.vorsichtiges_tempo(verlauf, Stand(JETZT, 36, 13))
+    assert t.gesamt == pytest.approx(26 / 72) and t.frauen == pytest.approx(9 / 72)
+    assert t.stunden == 72
+    # Gleichmäßiges Sammeln: beide Fenster gleich
+    gleich = [Stand(vor(72), 0, 0), Stand(vor(24), 48, 24)]
+    assert trend.vorsichtiges_tempo(gleich, Stand(JETZT, 72, 36)).gesamt == pytest.approx(1.0)
+
+
+def test_ampel_ab():
+    # Seit 3 h beobachtet, Frist in 40 h: Ampel nach 12 h Verlauf
+    t = trend.hochrechnen([Stand(vor(3), 30, 10)], Stand(JETZT, 33, 11), 91, 46, JETZT + timedelta(hours=40))
+    assert t.ampel is None and t.ampel_ab == vor(3) + timedelta(hours=12)
+    # Frist in 10 h: Ampel, sobald der Verlauf so lang ist wie die Restzeit (Mitte, hier in 3,5 h)
+    t = trend.hochrechnen([Stand(vor(3), 30, 10)], Stand(JETZT, 33, 11), 91, 46, JETZT + timedelta(hours=10))
+    assert t.ampel_ab == vor(3) + timedelta(hours=6.5)
+    # Belastbar: kein „ab“
+    t = trend.hochrechnen([Stand(vor(20), 20, 8)], Stand(JETZT, 33, 11), 91, 46, JETZT + timedelta(hours=40))
+    assert t.ampel is not None and t.ampel_ab is None

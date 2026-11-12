@@ -32,8 +32,11 @@
 | 👀 **Beobachten** | Anträge in der Sammelphase per Direktlink beobachten, inklusive Verlauf |
 | 🔍 **Transparenz** | Jeder Abruf bei antraege.gruene.de mit Zeitpunkt, Zweck und Größe; Laufprotokoll mit Anlass; im Footer letzter Abruf und nächste geplante Prüfung |
 
-**Datenschutz:** Es werden **keine Namen** von Antragsteller*innen oder Unterstützer*innen und **kein
-Antragstext** ausgelesen oder gespeichert – nur Kürzel, Titel, Links und Zahlen.
+**Datenschutz:** Es werden **keine Namen** von Antragsteller*innen oder Unterstützer*innen ausgelesen oder
+gespeichert – nur Kürzel, Titel, Links und Zahlen. Damit klar ist, worum es geht (gerade bei mehreren
+Änderungsanträgen zum selben Antrag), zeigt die App **kurze Auszüge** aus Antragstext und Begründung (je
+höchstens 15 Wörter, bei Änderungsanträgen die Änderung selbst: „Von Zeile 31 bis 33: Streichen … · Einfügen …“).
+Die Auszüge werden nicht gespeichert; den vollständigen Text gibt es auf antraege.gruene.de.
 
 ### Warum fehlen Anträge in der Sammelphase?
 
@@ -83,18 +86,19 @@ Die Antragsfristen für die Hochrechnung stehen je Konferenz in `FRISTEN` in
 Kreismitgliederversammlung) dort einen Eintrag mit ihrem Pfad ergänzen und `ANTRAGSHELPER_CONSULTATION`
 setzen. Ohne Eintrag zeigt die App das Tempo, aber keine Prognose.
 
-**Trend bis zur Frist** (lokale App und GitHub-Pages-Seite): Aus den gespeicherten Ständen berechnet die App das
-Sammeltempo (letzte 24 Stunden, bei kürzerem Verlauf seit Beobachtungsbeginn, mindestens 1 Stunde) und
-rechnet auf die Frist hoch: Stand + Tempo × verbleibende Stunden. Die Ampel gilt für das Frauenquorum
-(ohne Frauenquorum für das Gesamtquorum): Grün (auf Kurs) ab 110 % des Quorums, Gelb (gefährdet) ab 90 %,
-sonst Rot (Scheitern droht) – Rot auch, wenn das Gesamtquorum bei diesem Tempo nicht erreicht wird. Eine
-Ampel gibt es erst ab 12 Stunden Verlauf (kurz vor der Frist entsprechend weniger). Dazu zeigt sie, wie viele
-Personen pro Stunde ab jetzt nötig sind, eine Handlungsempfehlung und einen kopierbaren Mobilisierungs-Text.
-In der lokalen App werden Stände nur beim Aufruf gespeichert – je öfter beobachtete Anträge geöffnet
-werden, desto genauer. Auf der GitHub-Pages-Seite kommen sie aus den stündlichen Prüfungen.
+**Trend bis zur Frist**: Aus den gespeicherten Ständen rechnet der Antragshelper auf die Frist hoch:
+Stand + Tempo × verbleibende Stunden. Als Tempo zählt vorsichtig das langsamere aus den letzten 24 und
+72 Stunden (bei kürzerem Verlauf seit Beobachtungsbeginn, mindestens 1 Stunde) – Sammeln läuft in Schüben.
+Die **Ampel** (drei Lichter plus Text) zeigt den schlechteren Stand von Frauen- und Gesamtquorum: Grün (auf Kurs)
+ab 110 % des Quorums, Gelb (gefährdet) ab 90 %, sonst Rot (Scheitern droht) – Rot auch, wenn das Gesamtquorum
+bei diesem Tempo nicht erreicht wird. Eine Ampel gibt es erst ab 12 Stunden Verlauf (kurz vor der Frist
+entsprechend weniger); vorher steht dort, ab wann es eine Prognose gibt. Dazu zeigt sie, wie viele Personen pro
+Stunde ab jetzt nötig sind, eine Handlungsempfehlung, eine aufklappbare Erklärung und einen kopierbaren
+Mobilisierungs-Text. Auf der öffentlichen Seite kommen die Stände aus den stündlichen Prüfungen; auf dem eigenen
+Rechner nur beim Öffnen einer Seite (je öfter, desto genauer).
 
-**Frühwarnungen**: Bei gelber oder roter Ampel – und, solange die Prognose noch vorläufig ist, ab 48 Stunden
-vor Fristende – erscheint ein Antrag oben in der Übersicht unter „Frühwarnungen“ („Achtung: Gesamtfortschritt
+**Frühwarnungen**: Bei gelber oder roter Ampel – und, solange es noch keine Prognose gibt, ab 72 Stunden vor
+Fristende, wenn Frauen fehlen (sonst ab 48 Stunden) – erscheint ein Antrag oben in der Übersicht unter „Frühwarnungen“ („Achtung: Gesamtfortschritt
 bei 74 %, Frauenquorum bei 60 % – noch 18 Frauen nötig …“). Die Auswertungsseite bietet zusätzlich einen
 gezielten **Aufruf an Frauennetzwerke** zum Kopieren.
 
@@ -157,11 +161,20 @@ verlorenen Stand nicht alle Warnungen erneut kommen.
 
 Einmalig einrichten: **Settings → Pages → Build and deployment → Source: „GitHub Actions“**.
 
-Anträge in der Sammelphase können in [`beobachtet.txt`](beobachtet.txt) eingetragen werden. Die Datei ist
-öffentlich – bitte nur Links eintragen, die die Antragsteller*innen selbst öffentlich teilen.
+Anträge in der Sammelphase stehen in [`beobachtet.txt`](beobachtet.txt). Auf der Übersicht der Seite kann sie
+jede*r **vorschlagen**: Der Link wird im Browser streng geprüft (nur `https://antraege.gruene.de/52bdk/<antrag>[/<id>]`,
+sonst „Nur Links in Zusammenhang mit der 52BDK“ bzw. „Nicht gültig“) und geht dann
 
-Die statische Version kann nichts speichern: Beobachten per Knopf, Verlauf und Auswertung beliebiger
-Links gibt es nur in der lokal ausgeführten App.
+- **per GitHub** (Konto nötig) als vorausgefülltes Issue an den Workflow
+  [`antrag-vorschlagen.yml`](.github/workflows/antrag-vorschlagen.yml), der den Link noch einmal prüft und per
+  Pull Request einträgt – gemergt wird von Hand. Dafür einmalig **Settings → Actions → General → „Allow GitHub
+  Actions to create and approve pull requests“** einschalten.
+- **ohne Konto per Threema, Signal oder Mail** als Nachricht an die in `antragshelper/config.py` eingetragenen
+  Kontakte (`vorschlag_threema`, `vorschlag_signal` als Benutzernamen-Link, `vorschlag_mail`; leer = Button
+  ausgeblendet). Diese Links werden von Hand eingetragen.
+
+Die Icons der Buttons stammen aus [Simple Icons](https://simpleicons.org) (CC0, siehe
+`antragshelper/static/icons/LICENSE.md`).
 
 ## 🤝 Rücksicht auf antraege.gruene.de
 

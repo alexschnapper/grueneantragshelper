@@ -60,6 +60,54 @@
       });
     });
   }
+  // Antrag vorschlagen: Link streng prüfen (gleiches Muster wie antragshelper/vorschlag.py), dann Issue öffnen
+  var vorschlag = document.getElementById("vorschlagen");
+  if (vorschlag) {
+    var muster = new RegExp(vorschlag.dataset.muster);
+    var meldung = document.getElementById("vorschlag-meldung");
+    function zeige(text, fehler) {
+      meldung.hidden = !text;
+      meldung.textContent = text || "";
+      meldung.className = "vorschlag-meldung" + (fehler ? " err" : " ok");
+      vorschlag.elements.link.setAttribute("aria-invalid", fehler ? "true" : "false");
+    }
+    vorschlag.addEventListener("submit", function (ev) {
+      ev.preventDefault();
+      var knopf = ev.submitter || vorschlag.querySelector("button");
+      var link = vorschlag.elements.link.value.trim();
+      if (link.length > 300 || !muster.test(link)) {
+        zeige(/^https?:\/\//i.test(link) && link.indexOf(vorschlag.dataset.praefix) !== 0
+          ? "Nur Links in Zusammenhang mit der " + vorschlag.dataset.label
+          : "Nicht gültig", true);
+        return;
+      }
+      var text = "Bitte für den Antragshelper beobachten: " + link;
+      var adresse = knopf.dataset.adresse;
+      zeige("", false);
+      if (knopf.value === "mail") {
+        window.location.href = "mailto:" + adresse + "?subject=" + encodeURIComponent("Antrag aufnehmen") +
+          "&body=" + encodeURIComponent(text);
+      } else if (knopf.value === "threema") {
+        window.open("https://threema.id/" + encodeURIComponent(adresse) + "?text=" + encodeURIComponent(text), "_blank", "noopener");
+      } else if (knopf.value === "signal") {
+        // Signal kann keinen Text vorausfüllen: Text kopieren, dann Chat öffnen (Link) oder Benutzernamen nennen
+        var istLink = adresse.indexOf("https://signal.me/") === 0;
+        var weiter = function (kopiert) {
+          var hinweis = istLink ? "in Signal einfügen und senden."
+            : "in Signal einen neuen Chat mit dem Benutzernamen „" + adresse + "“ beginnen (Suche → Benutzername) und einfügen.";
+          zeige(kopiert ? "Text kopiert – " + hinweis : "Bitte diesen Text senden: „" + text + "“ – " + hinweis, false);
+          if (istLink) window.open(adresse, "_blank", "noopener");
+        };
+        if (navigator.clipboard && window.isSecureContext) {
+          navigator.clipboard.writeText(text).then(function () { weiter(true); }, function () { weiter(false); });
+        } else {
+          weiter(false);
+        }
+      } else {
+        window.open(vorschlag.dataset.issue + encodeURIComponent(link), "_blank", "noopener");
+      }
+    });
+  }
   document.querySelectorAll("form.filters").forEach(function (f) {
     f.addEventListener("submit", function (ev) { if (!f.getAttribute("action")) ev.preventDefault(); });
   });

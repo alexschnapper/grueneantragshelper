@@ -187,7 +187,7 @@
     {% endfor %}
   {% else %}
     <p>Keine beobachteten Anträge in der Sammelphase. Sie sind öffentlich nicht gelistet und kommen nur über
-      ihren Direktlink ({{ 'lokale App: ' if static }}Suchfeld → „Beobachten“) hierher.</p>
+      ihren Direktlink ({{ 'auf der Übersicht „Vorschlagen“' if static else 'Suchfeld → „Auswerten“ → „Beobachten“' }}) hierher.</p>
   {% endif %}
 </section>
 {% endblock %}

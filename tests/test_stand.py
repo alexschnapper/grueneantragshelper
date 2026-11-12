@@ -153,12 +153,17 @@ def test_verlauf_und_warnungen_im_statischen_export(tmp_path, fake_site):
     assert entry.find("a:title", ns).text.startswith("Frist läuft ab: Änderungsantrag zu VR-01")
     assert entry.find("a:link", ns).get("href").endswith("/antrag/wasser-antrag-1--999.html")
     assert "noch 27 Frauen nötig" in entry.find("a:summary", ns).text
+    assert entry.find("a:summary", ns).text.startswith("Änderung: Von Zeile 12 bis 13:")
+    # Auszüge werden angezeigt, aber nicht in stand.json gespeichert
+    assert "Starkregen" not in json.dumps(first) and "Kommune" not in json.dumps(first)
     assert "Muster" not in feed
 
     index = (tmp_path / "a" / "index.html").read_text(encoding="utf-8")
     assert "Frühwarnungen" in index and "warnungen.xml" in index
     detail = (tmp_path / "a" / "antrag" / "wasser-antrag-1--999.html").read_text(encoding="utf-8")
     assert "Trend bis zur Frist" in detail and 'data-copy="aufruf-frauen"' in detail
+    assert "Streichen „besser“" in detail and "Begründung:</span> Kommunen brauchen" in detail
+    assert "Einfügen „in jeder Kommune konsequent“" in index
 
     # Zweiter Lauf: Verlauf wird übernommen (gleicher Stand, kein neuer Eintrag), Warnung behält ihren Beginn
     build.build_site(tmp_path / "b", settings, watch_urls=[COLLECTING], previous=first)

@@ -29,7 +29,7 @@ antragshelper = "antragshelper.__main__:main"
 include = ["antragshelper*"]
 
 [tool.setuptools.package-data]
-antragshelper = ["templates/*.html", "templates/*.svg", "templates/*.xml", "static/*"]
+antragshelper = ["templates/*.html", "templates/*.svg", "templates/*.xml", "static/*", "static/icons/*"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

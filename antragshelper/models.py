@@ -189,6 +189,10 @@ class Detail:
     parent_title: Optional[str] = None
     parent_url: Optional[str] = None
     quorum: Optional[Quorum] = None
+    # Kurze Auszüge (je höchstens AUSZUG_WOERTER Wörter), nur zur Anzeige, nicht gespeichert.
+    # Bei Änderungsanträgen ist `text_auszug` die Änderung selbst (Zeilen, Streichen/Einfügen).
+    text_auszug: Optional[str] = None
+    begruendung_auszug: Optional[str] = None
 
     @property
     def collecting(self) -> bool:

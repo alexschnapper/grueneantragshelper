@@ -1,0 +1,61 @@
+name: Antrag vorschlagen
+
+# Vorschläge von der Pages-Seite kommen als Issue (Formular „Antrag in der Sammelphase vorschlagen“).
+# Der Link wird hier noch einmal streng geprüft (die Prüfung im Browser lässt sich umgehen) und bei Erfolg
+# per Pull Request in beobachtet.txt eingetragen. Keine Abrufe bei antraege.gruene.de.
+# Die Issue-Eingabe ist nicht vertrauenswürdig: Sie gelangt nur über Umgebungsvariablen in Python, nie in die Shell.
+on:
+  issues:
+    types: [opened, edited]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  vorschlag:
+    if: contains(github.event.issue.body, '### Direktlink')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: pyproject.toml
+
+      - run: pip install -e .
+
+      - name: Link prüfen und eintragen
+        id: pruefen
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+          ISSUE_NUMBER: ${{ github.event.issue.number }}
+        run: python -m antragshelper vorschlag --beobachten beobachtet.txt
+
+      - name: Pull Request anlegen
+        if: steps.pruefen.outputs.ergebnis == 'neu'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMMER: ${{ github.event.issue.number }}
+          LINK: ${{ steps.pruefen.outputs.link }}
+        run: |
+          branch="vorschlag-${NUMMER}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c "$branch"
+          git add beobachtet.txt
+          git commit -m "Vorschlag aus #${NUMMER}: Antrag beobachten"
+          git push -f origin "$branch"
+          gh pr create --base main --head "$branch" --title "Vorschlag aus #${NUMMER}: Antrag beobachten" \
+            --body "Trägt ${LINK} in \`beobachtet.txt\` ein (Vorschlag über die Pages-Seite, geprüft). Closes #${NUMMER}" \
+            || echo "Pull Request existiert bereits"
+
+      - name: Rückmeldung im Issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NUMMER: ${{ github.event.issue.number }}
+          MELDUNG: ${{ steps.pruefen.outputs.meldung }}
+        run: gh issue comment "$NUMMER" --body "$MELDUNG"

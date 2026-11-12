@@ -11,11 +11,11 @@ Je Länge gibt es zwei Fassungen: **Einzelanrede** (eine Person, „du“) und *
 
 **Einzelanrede**
 
-> Hi [Name], ich hab gesehen, dass du für deinen Antrag noch Unterstützung sammelst 🌻 Ich hab ein kleines inoffizielles Tool gebaut, das zeigt, wie viele (Frauen) noch fehlen und ob das Tempo bis zur Frist reicht. Darf ich deinen Antrag dort aufnehmen? Öffentlich wären nur Titel, Link und Zahlen, keine Namen: https://alexschnapper.github.io/grueneantragshelper/
+> Hi [Name], ich hab gesehen, dass du für deinen Antrag noch Unterstützung sammelst 🌻 Ich hab ein kleines inoffizielles Tool gebaut, das zeigt, wie viele (Frauen) noch fehlen und ob das Tempo bis zur Frist reicht. Darf ich deinen Antrag dort aufnehmen? Öffentlich wären nur Titel, Link, Zahlen und ein kurzer Auszug, keine Namen: https://alexschnapper.github.io/grueneantragshelper/
 
 **Team**
 
-> Hi [Name], ihr sammelt gerade für euren Antrag 🌻 Ich hab ein kleines inoffizielles Tool gebaut, das zeigt, wie viele (Frauen) noch fehlen und ob das Tempo bis zur Frist reicht. Darf ich euren Antrag dort aufnehmen? Öffentlich wären nur Titel, Link und Zahlen, keine Namen: https://alexschnapper.github.io/grueneantragshelper/
+> Hi [Name], ihr sammelt gerade für euren Antrag 🌻 Ich hab ein kleines inoffizielles Tool gebaut, das zeigt, wie viele (Frauen) noch fehlen und ob das Tempo bis zur Frist reicht. Darf ich euren Antrag dort aufnehmen? Öffentlich wären nur Titel, Link, Zahlen und ein kurzer Auszug, keine Namen: https://alexschnapper.github.io/grueneantragshelper/
 
 ## Kurz (Signal, WhatsApp, Chatbegrünung)
 
@@ -25,7 +25,7 @@ Je Länge gibt es zwei Fassungen: **Einzelanrede** (eine Person, „du“) und *
 >
 > Ich betreibe ehrenamtlich den **Grünen Antragshelper**, ein inoffizielles Tool, das für Anträge in der Sammelphase zeigt: Wie viele fehlen noch, wie viele davon Frauen? Reicht das bisherige Tempo bis zum Antragsschluss? Wird das Frauenquorum knapp, gibt es eine Frühwarnung und fertige Aufruftexte, auch gezielt für Frauennetzwerke.
 >
-> Anträge in der Sammelphase sind auf antraege.gruene.de nirgends öffentlich gelistet. Deshalb frage ich: **Darf ich deinen Antrag dort aufnehmen?** Öffentlich sichtbar wären nur Titel, Link und Zahlen, keine Namen. Du kannst ihn jederzeit wieder rausnehmen lassen.
+> Anträge in der Sammelphase sind auf antraege.gruene.de nirgends öffentlich gelistet. Deshalb frage ich: **Darf ich deinen Antrag dort aufnehmen?** Öffentlich sichtbar wären nur Titel, Link, Zahlen und ein kurzer Auszug aus Antragstext und Begründung, keine Namen. Du kannst ihn jederzeit wieder rausnehmen lassen.
 >
 > So sieht's aus: https://alexschnapper.github.io/grueneantragshelper/
 
@@ -35,7 +35,7 @@ Je Länge gibt es zwei Fassungen: **Einzelanrede** (eine Person, „du“) und *
 >
 > Ich betreibe ehrenamtlich den **Grünen Antragshelper**, ein inoffizielles Tool, das für Anträge in der Sammelphase zeigt: Wie viele fehlen noch, wie viele davon Frauen? Reicht das bisherige Tempo bis zum Antragsschluss? Wird das Frauenquorum knapp, gibt es eine Frühwarnung und fertige Aufruftexte, auch gezielt für Frauennetzwerke.
 >
-> Anträge in der Sammelphase sind auf antraege.gruene.de nirgends öffentlich gelistet. Deshalb frage ich: **Darf ich euren Antrag dort aufnehmen?** Öffentlich sichtbar wären nur Titel, Link und Zahlen, keine Namen. Ihr könnt ihn jederzeit wieder rausnehmen lassen.
+> Anträge in der Sammelphase sind auf antraege.gruene.de nirgends öffentlich gelistet. Deshalb frage ich: **Darf ich euren Antrag dort aufnehmen?** Öffentlich sichtbar wären nur Titel, Link, Zahlen und ein kurzer Auszug aus Antragstext und Begründung, keine Namen. Ihr könnt ihn jederzeit wieder rausnehmen lassen.
 >
 > So sieht's aus: https://alexschnapper.github.io/grueneantragshelper/
 
@@ -61,9 +61,10 @@ Je Länge gibt es zwei Fassungen: **Einzelanrede** (eine Person, „du“) und *
 >
 > Anträge in der Sammelphase sind auf antraege.gruene.de bewusst nicht öffentlich gelistet. Ich nehme sie deshalb nur mit Zustimmung auf. Öffentlich sichtbar wären:
 > - Titel und Link zu deinem Antrag,
-> - die Zahlen (Stand, Quorum, Frauenanteil) und die Hochrechnung.
+> - die Zahlen (Stand, Quorum, Frauenanteil) und die Hochrechnung,
+> - ein kurzer Auszug aus Antragstext und Begründung (je höchstens 15 Wörter), damit klar ist, worum es geht.
 >
-> **Keine Namen** von Antragsteller*innen oder Unterstützer*innen, kein Antragstext. Du kannst den Antrag jederzeit wieder entfernen lassen, eine kurze Nachricht genügt.
+> **Keine Namen** von Antragsteller*innen oder Unterstützer*innen. Du kannst den Antrag jederzeit wieder entfernen lassen, eine kurze Nachricht genügt.
 >
 > Wenn du magst, antworte einfach mit „Ja, gerne“.
 >
@@ -90,9 +91,10 @@ Je Länge gibt es zwei Fassungen: **Einzelanrede** (eine Person, „du“) und *
 >
 > Anträge in der Sammelphase sind auf antraege.gruene.de bewusst nicht öffentlich gelistet. Ich nehme sie deshalb nur mit eurer Zustimmung auf. Öffentlich sichtbar wären:
 > - Titel und Link zu eurem Antrag,
-> - die Zahlen (Stand, Quorum, Frauenanteil) und die Hochrechnung.
+> - die Zahlen (Stand, Quorum, Frauenanteil) und die Hochrechnung,
+> - ein kurzer Auszug aus Antragstext und Begründung (je höchstens 15 Wörter), damit klar ist, worum es geht.
 >
-> **Keine Namen** von Antragsteller*innen oder Unterstützer*innen, kein Antragstext. Ihr könnt den Antrag jederzeit wieder entfernen lassen, eine kurze Nachricht genügt.
+> **Keine Namen** von Antragsteller*innen oder Unterstützer*innen. Ihr könnt den Antrag jederzeit wieder entfernen lassen, eine kurze Nachricht genügt.
 >
 > Wenn ihr mögt, antwortet einfach mit „Ja, gerne“.
 >
