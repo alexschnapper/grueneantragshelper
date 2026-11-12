@@ -7,3 +7,6 @@
 #
 # Beispiel:
 # https://antraege.gruene.de/52bdk/<antrag-slug>/<id>
+
+# ÄA zu VR-01 „Aus der Dürre lernen …“ – Veröffentlichung vom Antragsteller freigegeben (12.11.2026)
+https://antraege.gruene.de/52bdk/aus-der-durre-lernen-wasser-sichern-landwirtschaft-schutzen-klimar-56963/25769
