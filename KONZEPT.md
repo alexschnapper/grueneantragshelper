@@ -17,7 +17,11 @@ einer Konferenz (z. B. der 52. BDK, Pfad `52bdk`) anzeigt.
 ## Abgrenzung
 
 - **Kein Login** ins Grüne Netz. Nur, was anonym sichtbar ist.
-- **Kein Antragstext.** Die App zeigt nur Rahmendaten und verlinkt auf das Original.
+- **Nur kurze Auszüge aus dem Antragstext.** Anträge sind auf antraege.gruene.de öffentlich lesbar. Damit
+  erkennbar ist, worum es geht (sonst wirken mehrere Änderungsanträge zum selben Antrag wie Doppelungen),
+  zeigt die App je höchstens 15 Wörter aus Antragstext und Begründung – bei Änderungsanträgen die Änderung
+  selbst (Zeilen, Streichen/Einfügen) – und verlinkt für den Volltext auf das Original. Auszüge werden nicht
+  gespeichert (seit 12.11.2026; die bis dahin aufgenommenen Teams sind informiert).
 - **Keine Namen speichern.** Weder Antragsteller*innen noch Unterstützer*innen werden
   gespeichert. Gespeichert werden nur Zahlen (Quorum, Stand) und öffentliche URLs/Kürzel/Titel.
 - Zunächst nur lokal ausführbar (eine Person, ein Rechner).

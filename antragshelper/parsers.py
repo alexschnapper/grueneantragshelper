@@ -123,8 +123,62 @@ def parse_quorum(hint_text: str) -> Optional[Quorum]:
     return None
 
 
+AUSZUG_WOERTER = 15
+
+
+def kuerzen(text: str, woerter: int = AUSZUG_WOERTER) -> str:
+    words = text.split()
+    return " ".join(words[:woerter]) + (" …" if len(words) > woerter else "")
+
+
+def _section_text(section: Tag) -> str:
+    """Text eines Abschnitts ohne Überschrift und Zeilennummern."""
+    section = BeautifulSoup(str(section), "html.parser")
+    for node in section.select("h2, h3, .lineNumber, ul.bookmarks"):
+        node.decompose()
+    return _text(section)
+
+
+def _heading_section(soup: BeautifulSoup, heading: str) -> Optional[Tag]:
+    for section in soup.select("section.motionTextHolder"):
+        h = section.find(["h2", "h3"])
+        if h is not None and _text(h).startswith(heading):
+            return section
+    return None
+
+
+def _amendment_changes(soup: BeautifulSoup) -> Optional[str]:
+    """'Von Zeile 31 bis 33: Streichen „…“ · Einfügen „…“' aus der Ansicht „Nur die Änderungen“."""
+    sections = soup.select(".onlyChangedText section.paragraph")
+    if not sections:
+        return None
+    parts = []
+    for section in sections:
+        summary = _text(section.select_one(".lineSummary")).rstrip(":")
+        dels = [f"„{_text(d)}“" for d in section.find_all("del") if _text(d)]
+        inss = [f"„{_text(i)}“" for i in section.find_all("ins") if _text(i)]
+        change = " · ".join(filter(None, [
+            "Streichen " + ", ".join(dels) if dels else "",
+            "Einfügen " + ", ".join(inss) if inss else "",
+        ])) or _section_text(section).replace(_text(section.select_one(".lineSummary")), "", 1).strip()
+        parts.append((summary, change))
+    first_summary = parts[0][0]
+    rest = " / ".join([parts[0][1]] + [f"{summary}: {change}" for summary, change in parts[1:]])
+    return f"{first_summary}: {kuerzen(rest)}" if first_summary else kuerzen(rest)
+
+
+def _excerpts(soup: BeautifulSoup) -> "tuple[Optional[str], Optional[str]]":
+    text = _amendment_changes(soup)
+    if text is None:
+        section = _heading_section(soup, "Antragstext")
+        text = kuerzen(_section_text(section)) if section is not None else None
+    reason = soup.select_one("#amendmentExplanation") or _heading_section(soup, "Begründung")
+    reason_text = _section_text(reason) if reason is not None else ""
+    return text or None, kuerzen(reason_text) if reason_text else None
+
+
 def parse_detail(html: str, url: str) -> Detail:
-    """Liest die Rahmendaten einer Antrags- oder Änderungsantragsseite (ohne Antragstext, ohne Namen)."""
+    """Liest Rahmendaten und kurze Auszüge aus Antragstext und Begründung (ohne Namen)."""
     soup = BeautifulSoup(html, "html.parser")
     table = soup.select_one("table.motionDataTable")
     caption = _text(table.find("caption")) if table else ""
@@ -133,6 +187,7 @@ def parse_detail(html: str, url: str) -> Detail:
         title=_text(soup.select_one("main h1") or soup.find("h1")),
         kind="amendment" if "Änderungsantrag" in caption else "motion",
     )
+    detail.text_auszug, detail.begruendung_auszug = _excerpts(soup)
     if table is None:
         return detail
 

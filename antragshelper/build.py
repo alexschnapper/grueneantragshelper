@@ -16,7 +16,7 @@ from typing import Dict, List, Optional
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from . import benachrichtigung, dashboard, sharepic, stand, trend, views
+from . import benachrichtigung, dashboard, sharepic, stand, trend, views, vorschlag
 from .config import Settings
 from .links import Links, detail_page, list_page, sharepic_page
 from .models import ConsultationIndex, Detail, IndexEntry, normalize_prefix
@@ -74,7 +74,11 @@ def warning_entries(watched: List[WatchedItem], trends: Dict[str, Optional[trend
             "titel": f"{trend.WARNSTUFEN[w['stufe']]}: {item.detail.title}",
             "link": f"{site_url}/{detail_page(item.url)}",
             "seit": w["seit"],
-            "text": " ".join(filter(None, [t.warnung, t.empfehlung])),
+            "text": " ".join(filter(None, [
+                f"Änderung: {item.detail.text_auszug}" if item.detail.text_auszug and item.detail.kind == "amendment"
+                else f"Antragstext: {item.detail.text_auszug}" if item.detail.text_auszug else "",
+                t.warnung, t.empfehlung,
+            ])),
         })
     return entries
 
@@ -145,7 +149,8 @@ def build_site(out: Path, settings: Settings, details: bool = False, watch_urls:
             shutil.rmtree(out)
         out.mkdir(parents=True)
 
-        render("index.html", "index.html", **views.overview(index, watched, trends))
+        render("index.html", "index.html", vorschlag_muster=vorschlag.muster(settings.consultation_url).pattern,
+               **views.overview(index, watched, trends))
         render("warnungen.xml", "warnungen.xml", updated=built_at.isoformat(timespec="seconds"), eintraege=entries)
         render("dashboard.html", "dashboard.html",
                **views.dashboard_page(helper, index, activity_entries, watched, Links(True, "", known)))

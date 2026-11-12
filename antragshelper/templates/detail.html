@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_quorum.html" import ampel, bar, summary %}
+{% from "_quorum.html" import ampel, auszug, bar, summary %}
 {% block title %}{{ entry.prefix if entry else 'Auswertung' }}{% endblock %}
 {% block head %}{% if mobilisierung %}<script src="{{ href('static', path='kopieren.js') }}" defer></script>
 <script src="{{ href('static', path='sharepic.js') }}" defer></script>{% endif %}{% endblock %}
@@ -7,6 +7,7 @@
 <section>
   <p class="kind">{{ 'Änderungsantrag' if detail.kind == 'amendment' else 'Antrag' }}{% if entry %} · {{ entry.agenda_item }}{% endif %}</p>
   <h1>{{ detail.title }}</h1>
+  {{ auszug(detail, gross=true) }}
   <p><a class="source" href="{{ detail.url }}" target="_blank" rel="noopener">Original auf antraege.gruene.de ↗</a>
     {% if detail.parent_url %} · zu <a href="{{ href('auswertung', url=detail.parent_url) }}">{{ detail.parent_title }}</a>{% endif %}</p>
 
@@ -44,9 +45,17 @@
 
     {% if trend %}{% set m = trend.massgeblich %}
     <h3>Trend bis zur Frist</h3>
-    <p>Status: {{ ampel(trend) }}
-      {% if trend.frist %}<small class="hint">Frist {{ trend.frist.strftime('%d.%m.%Y, %H:%M') }} Uhr ({{ restzeit_text(m.restzeit) }})</small>{% endif %}</p>
-    {% if trend.empfehlung %}<p class="result">{{ trend.empfehlung }}</p>{% endif %}
+    <div class="ampel-box">
+      {{ ampel(trend, gross=true) }}
+      <div>
+        {% if trend.empfehlung %}<p class="result">{{ trend.empfehlung }}</p>
+        {% elif trend.ampel == 'gruen' and trend.gesamt.bedarf %}<p>Bei aktuellem Tempo wird das Quorum mit Puffer erreicht – weiter beobachten.</p>
+        {% elif trend.ampel == 'gruen' %}<p>Quorum erreicht.</p>
+        {% elif trend.ampel_ab %}<p>Für eine verlässliche Prognose braucht es 12 Stunden Verlauf{% if trend.tempo %} – bisher
+          {{ '%.0f'|format(trend.tempo.stunden) }} Std. beobachtet{% endif %}. Bis dahin zählen Tempo und „ab jetzt nötig“ in der Tabelle.</p>{% endif %}
+        {% if trend.frist %}<p class="hint">Antragsschluss {{ trend.frist.strftime('%d.%m.%Y, %H:%M') }} Uhr ({{ restzeit_text(m.restzeit) }})</p>{% endif %}
+      </div>
+    </div>
     <table class="quorum">
       <thead><tr><th></th><th class="num">Tempo pro Stunde</th><th class="num">Prognose zur Frist</th><th class="num">ab jetzt nötig pro Stunde</th></tr></thead>
       <tbody>
@@ -57,13 +66,24 @@
       {% endfor %}
       </tbody>
     </table>
-    <p class="hint">Reine Hochrechnung: aktueller Stand + Tempo × verbleibende Stunden. Grün ab 110 % des Quorums,
-      Gelb ab 90 %, darunter Rot (bezogen auf das Frauenquorum, falls es eines gibt). Rot auch, wenn das Gesamtquorum
-      bei diesem Tempo nicht erreicht wird. Die Ampel gibt es erst ab 12 Stunden Verlauf (oder so viel, wie bis zur Frist bleibt),
-      vorher wird keine Prognose angezeigt.
+    <details class="erklaerung">
+      <summary>Wie wird gerechnet?</summary>
+      <p><strong>Prognose zur Frist</strong> = aktueller Stand + Tempo × verbleibende Stunden. Als Tempo zählt vorsichtig
+        das langsamere aus den letzten 24 und 72 Stunden – Sammeln läuft in Schüben, ein kurzer Schub soll nicht über
+        Tage hochgerechnet werden.</p>
+      <ul class="legende">
+        <li><span class="licht gruen an"></span> <strong>Grün · auf Kurs</strong>: Prognose mindestens 110 % des Quorums (oder Quorum erreicht).</li>
+        <li><span class="licht gelb an"></span> <strong>Gelb · gefährdet</strong>: Prognose zwischen 90 und 110 % – es reicht knapp; gezielte Ansprache vorbereiten.</li>
+        <li><span class="licht rot an"></span> <strong>Rot · Scheitern droht</strong>: Prognose unter 90 %, das Gesamtquorum reicht nicht oder die Frist ist abgelaufen – sofort mobilisieren.</li>
+      </ul>
+      <p>Gilt für Frauen- und Gesamtquorum; die Ampel zeigt den schlechteren Stand. Sie erscheint erst ab 12 Stunden
+        Verlauf (kurz vor der Frist entsprechend früher). Frühwarnungen gibt es bei Gelb und Rot, ohne Ampel ab
+        72 Stunden vor Fristende, wenn Frauen fehlen (sonst ab 48 Stunden).</p>
+    </details>
+    <p class="hint">
       {% if trend.tempo is none and static %}Für das Tempo braucht es mindestens eine Stunde Verlauf – die Seite
         prüft beobachtete Anträge stündlich.
-      {% elif trend.tempo is none %}Für das Tempo braucht es mindestens eine Stunde lokal gespeicherten Verlauf –
+      {% elif trend.tempo is none %}Für das Tempo braucht es mindestens eine Stunde gespeicherten Verlauf –
         lade die Seite später noch einmal (Stände werden nur beim Aufruf abgerufen).
       {% elif trend.tempo.seit_beginn %}Tempo seit Beginn der Beobachtung ({{ '%.0f'|format(trend.tempo.stunden) }} Std.).
       {% else %}Tempo der letzten {{ '%.0f'|format(trend.tempo.stunden) }} Stunden.{% endif %}
@@ -100,7 +120,7 @@
 
   {% if static %}
   <p class="static-note">{% if trend %}Trend aus den stündlichen Prüfungen, Stand dieser Seite siehe unten.
-    {% endif %}Beobachten gibt es nur in der lokal ausgeführten App (siehe GitHub) oder über <code>beobachtet.txt</code>.</p>
+    {% endif %}Neue Anträge lassen sich auf der Übersicht vorschlagen.</p>
   {% else %}
   <form method="post" action="/beobachten">
     <input type="hidden" name="url" value="{{ detail.url }}">
@@ -125,7 +145,7 @@
     {% for item in collecting_amendments %}
       <tr>
         <td><a href="{{ href('auswertung', url=item.url) }}">{{ item.url.rsplit('/', 1)[1] }}</a>
-          {% if item.detail %}<br><small>{{ item.detail.status or '–' }}</small>{% endif %}</td>
+          {% if item.detail %}<br><small>{{ item.detail.status or '–' }}</small>{{ auszug(item.detail) }}{% endif %}</td>
         {% if item.detail and item.detail.quorum %}{% set q = item.detail.quorum %}
           {% if q.reached %}
           <td colspan="3">{{ summary(q) }}</td>
@@ -144,7 +164,7 @@
   {% endif %}
   <p class="hint">Änderungsanträge in der Sammelphase sind auf antraege.gruene.de nirgends öffentlich gelistet
     (auch nicht unter dem Antrag). Sie erscheinen hier, sobald ihr Direktlink {% if static %}in <code>beobachtet.txt</code> im Repo eingetragen
-    oder in der lokalen App beobachtet wurde.{% else %}ins Suchfeld eingefügt und „Beobachten“ gewählt wurde.{% endif %}</p>
+    bzw. auf der Übersicht vorgeschlagen wurde.{% else %}ins Suchfeld eingefügt und „Beobachten“ gewählt wurde.{% endif %}</p>
 
   <h3>Veröffentlicht ({{ published_amendments|length }})</h3>
   {% if published_amendments %}
@@ -162,7 +182,7 @@
 
 {% if history|length > 1 %}
 <section>
-  <h2>Verlauf (lokal gespeichert)</h2>
+  <h2>Verlauf (gespeicherte Stände)</h2>
   <table>
     <thead><tr><th>Zeitpunkt</th><th>Status</th><th class="num">gesamt</th><th class="num">Frauen</th></tr></thead>
     <tbody>

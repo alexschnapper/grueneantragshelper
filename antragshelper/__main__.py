@@ -84,6 +84,40 @@ def _check(previous_source: str, watch_file: Optional[Path]) -> int:
     return 0
 
 
+def _vorschlag(watch_file: Path) -> int:
+    """Für den Workflow „Antrag vorschlagen“: Link aus dem Issue (Umgebung ISSUE_BODY) prüfen und eintragen.
+
+    Schreibt `ergebnis` (neu|vorhanden|abgelehnt), `link` (nur wenn gültig) und `meldung` nach $GITHUB_OUTPUT.
+    Die ungeprüfte Eingabe wird nie zurückgegeben, auch nicht in der Meldung.
+    """
+    import os
+    from datetime import date
+
+    from . import vorschlag
+    from .build import read_watch_file
+
+    link = vorschlag.link_aus_issue(os.environ.get("ISSUE_BODY", ""))
+    label = settings.consultation.upper()
+    fehler = vorschlag.pruefe(link, settings.consultation_url, label) if link is not None else vorschlag.NICHT_GUELTIG
+    if fehler:
+        ergebnis, meldung = "abgelehnt", (f"❌ {fehler}. Erwartet wird ein Direktlink wie "
+                                          f"`{settings.consultation_url}/<antrag>/<id>`.")
+        link = ""
+    elif link in (read_watch_file(watch_file) if watch_file.exists() else []):
+        ergebnis, meldung = "vorhanden", "ℹ️ Dieser Antrag wird bereits beobachtet – danke!"
+    else:
+        nummer = os.environ.get("ISSUE_NUMBER", "?")
+        with watch_file.open("a", encoding="utf-8") as fh:
+            fh.write(f"\n# Vorschlag aus Issue #{nummer} ({date.today():%d.%m.%Y})\n{link}\n")
+        ergebnis, meldung = "neu", ("✅ Danke! Der Link ist gültig. Ein Pull Request trägt ihn in `beobachtet.txt` ein; "
+                                    "nach dem Merge erscheint der Antrag auf der Seite (Titel, Zahlen, kurzer Auszug – keine Namen).")
+    print(f"ergebnis={ergebnis}")
+    if os.environ.get("GITHUB_OUTPUT"):
+        with open(os.environ["GITHUB_OUTPUT"], "a", encoding="utf-8") as fh:
+            fh.write(f"ergebnis={ergebnis}\nlink={link}\nmeldung={meldung}\n")
+    return 0
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(prog="antragshelper", description="Quorum-Auswertung für antraege.gruene.de")
     sub = parser.add_subparsers(dest="cmd", required=True)
@@ -105,12 +139,16 @@ def main() -> int:
     check = sub.add_parser("check", help="Prüfen, ob sich seit dem letzten Build etwas geändert hat (1 Abruf)")
     check.add_argument("--vorher", metavar="URL|DATEI", required=True, help="stand.json des letzten Builds")
     check.add_argument("--beobachten", type=Path, metavar="DATEI")
+    vorschlag = sub.add_parser("vorschlag", help="Vorgeschlagenen Link aus einem Issue prüfen und eintragen (Workflow)")
+    vorschlag.add_argument("--beobachten", type=Path, default=Path("beobachtet.txt"), metavar="DATEI")
     args = parser.parse_args()
 
     if args.cmd == "zeige":
         return _show(args.query)
     if args.cmd == "check":
         return _check(args.vorher, args.beobachten)
+    if args.cmd == "vorschlag":
+        return _vorschlag(args.beobachten)
     if args.cmd == "build":
         import os
 

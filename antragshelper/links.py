@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import hashlib
 import re
+from pathlib import Path
 from typing import AbstractSet, Optional
 from urllib.parse import quote, urlencode, urlparse
 
@@ -11,6 +12,17 @@ def slug(text: str, length: int = 40) -> str:
     base = re.sub(r"[^a-z0-9]+", "-", text.lower().replace("ä", "ae").replace("ö", "oe")
                   .replace("ü", "ue").replace("ß", "ss")).strip("-")[:length].strip("-")
     return f"{base}-{hashlib.md5(text.encode()).hexdigest()[:6]}"
+
+
+_STATIC = Path(__file__).parent / "static"
+
+
+def static_version(path: str) -> str:
+    """'?v=<8 Zeichen Inhalts-Hash>' für mitgelieferte Dateien (Cache-Busting), sonst ''."""
+    try:
+        return "?v=" + hashlib.md5((_STATIC / path).read_bytes()).hexdigest()[:8]
+    except OSError:
+        return ""
 
 
 def detail_page(url: str) -> str:
@@ -52,7 +64,7 @@ class Links:
                 query = urlencode({k: v for k, v in params.items() if v})
                 return "/liste" + ("?" + query if query else "")
             if name == "static":
-                return "/static/" + params["path"]
+                return "/static/" + params["path"] + static_version(params["path"])
             if name in ("sharepic", "sharepic_svg"):
                 return ("/sharepic" if name == "sharepic" else "/sharepic.svg") + "?url=" + quote(params["url"], safe="")
             raise KeyError(name)
@@ -67,7 +79,7 @@ class Links:
         if name == "liste":
             return self.root + list_page(params.get("art", ""), params.get("top", ""), params.get("stand", ""))
         if name == "static":
-            return self.root + "static/" + params["path"]
+            return self.root + "static/" + params["path"] + static_version(params["path"])
         if name in ("sharepic", "sharepic_svg"):
             return self.root + sharepic_page(params["url"], "html" if name == "sharepic" else "svg")
         raise KeyError(name)

@@ -4,9 +4,31 @@
 </div>
 {%- endmacro %}
 
-{% macro ampel(t) -%}
+{# Ampel mit drei Lichtern; die Stufe steht immer auch als Text daneben #}
+{# Ampel mit drei Lichtern, nur wenn es eine belastbare Prognose gibt; sonst ein klarer Text statt leerer Lichter #}
+{% macro ampel(t, gross=false) -%}
 {% set labels = {'gruen': 'Grün · auf Kurs', 'gelb': 'Gelb · gefährdet', 'rot': 'Rot · Scheitern droht'} %}
-<span class="status ampel-{{ t.ampel or 'offen' }}">{{ labels.get(t.ampel, 'vorläufig · zu wenig Verlauf' if t.massgeblich.prognose is not none else 'noch keine Prognose') }}</span>
+{% if t.ampel %}
+<span class="ampel{{ ' gross' if gross }}" title="{{ labels[t.ampel] }}">
+  <span class="lichter" aria-hidden="true">{% for stufe in ['rot', 'gelb', 'gruen'] %}<span class="licht {{ stufe }}{{ ' an' if t.ampel == stufe }}"></span>{% endfor %}</span>
+  <span class="ampel-text">{{ labels[t.ampel] }}</span>
+</span>
+{% else %}
+<span class="prognose-offen">
+  {% if t.warnstufe == 'frist' %}<span class="status status-frist">Frist läuft ab</span>{% endif %}
+  <span class="prognose-ab">{% if t.ampel_ab %}Prognose ab ca. {{ t.ampel_ab.strftime('%d.%m., %H:%M') }} Uhr{% elif t.frist %}Prognose folgt{% else %}keine Prognose (Frist fehlt){% endif %}</span>
+</span>
+{% endif %}
+{%- endmacro %}
+
+{# Kurzer Auszug aus Antragstext/Änderung und Begründung, damit erkennbar ist, worum es geht #}
+{% macro auszug(d, gross=false) -%}
+{% if d.text_auszug or d.begruendung_auszug %}
+<div class="auszug{{ ' gross' if gross }}">
+  {% if d.text_auszug %}<p><span class="auszug-label">{{ 'Änderung' if d.kind == 'amendment' else 'Antragstext' }}:</span> {{ d.text_auszug }}</p>{% endif %}
+  {% if d.begruendung_auszug %}<p><span class="auszug-label">Begründung:</span> {{ d.begruendung_auszug }}</p>{% endif %}
+</div>
+{% endif %}
 {%- endmacro %}
 
 {% macro summary(q) -%}
@@ -15,4 +37,10 @@
 {% else %}
   <strong>{{ q.still_needed }}</strong> fehlen{% if q.min_women is not none %}, davon mindestens <strong>{{ q.missing_women }}</strong> Frauen{% endif %}
 {% endif %}
+{%- endmacro %}
+
+{# Icon als Maske in Textfarbe. Die Adresse steht direkt am Element, damit sie relativ zur Seite aufgelöst wird
+   (in einer CSS-Variable würde der Browser sie relativ zu style.css auflösen) #}
+{% macro icon(src) -%}
+<span class="icon" style="-webkit-mask-image: url('{{ src }}'); mask-image: url('{{ src }}')" aria-hidden="true"></span>
 {%- endmacro %}

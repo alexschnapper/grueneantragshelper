@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% set active_page = "index" %}
-{% from "_quorum.html" import ampel, bar, summary %}
+{% from "_quorum.html" import ampel, auszug, bar, icon, summary %}
 {% block title %}Übersicht{% endblock %}
 {% block content %}
 <section>
@@ -12,7 +12,9 @@
     <a class="tile" href="#unterstuetzung"><span>{{ needs_support|length }}</span>in Sammelphase (nur beobachtete)</a>
   </div>
   <p class="hint">Gezählt werden die veröffentlichten Einträge der Tagesordnung. Anträge in der Sammelphase
-    sind auf antraege.gruene.de nicht öffentlich gelistet – füge sie über ihren Direktlink hinzu.</p>
+    sind auf antraege.gruene.de nicht öffentlich gelistet – {% if static %}schlage sie <a href="#vorschlagen">unten über
+    ihren Direktlink vor</a>.{% else %}füge ihren Direktlink oben ins Suchfeld ein, klicke „Auswerten“ und dann
+    „Beobachten“.{% endif %}</p>
 </section>
 
 {% if warnings or static %}
@@ -21,15 +23,15 @@
   {% if warnings %}
   <ul class="warnings">
   {% for item, t in warnings %}
-    <li>{{ ampel(t) }} <a href="{{ href('auswertung', url=item.url) }}">{{ item.detail.title }}</a><br>
+    <li>{{ ampel(t) }} <a href="{{ href('auswertung', url=item.url) }}">{{ item.detail.title }}</a>{{ auszug(item.detail) }}
       {{ t.warnung }}{% if t.empfehlung %} {{ t.empfehlung }}{% endif %}</li>
   {% endfor %}
   </ul>
   {% else %}
   <p>Derzeit keine Warnungen für beobachtete Anträge.</p>
   {% endif %}
-  <p class="hint">Gewarnt wird bei gelber oder roter Ampel und, solange die Prognose noch vorläufig ist, ab 48 Stunden
-    vor Fristende.{% if static %} Abonnieren: <a href="{{ href.root }}warnungen.xml">Feed der Frühwarnungen</a> (Atom, für jeden
+  <p class="hint">Gewarnt wird bei gelber oder roter Ampel und – solange es noch keine Prognose gibt – kurz vor Fristende:
+    ab 72 Stunden, wenn Frauen fehlen, sonst ab 48 Stunden.{% if static %} Abonnieren: <a href="{{ href.root }}warnungen.xml">Feed der Frühwarnungen</a> (Atom, für jeden
     Feed-Reader – ohne Anmeldung, es werden keine Daten über Abonnent*innen erhoben).{% endif %}</p>
 </section>
 {% endif %}
@@ -44,17 +46,37 @@
       für alle ohne Berechtigung aus, und die Sammelseite ist für diese Konferenz abgeschaltet.</p>
     <p>Die App kann sie deshalb nicht selbst finden. <strong>Eine leere Liste heißt nicht, dass kein Antrag
       Unterstützung braucht.</strong> Hier erscheinen nur Anträge, deren Direktlink (meist von den
-      Antragsteller*innen verschickt) {% if static %}in die Datei <code>beobachtet.txt</code> im
-      <a href="{{ settings.repo_url }}">GitHub-Repo</a> eingetragen wurde (oder in der lokalen App mit „Beobachten“
-      gespeichert).{% else %}oben ins Suchfeld eingefügt und mit „Beobachten“ gespeichert wurde.{% endif %}</p>
+      Antragsteller*innen verschickt) {% if static %}vorgeschlagen und in die Datei <code>beobachtet.txt</code> im
+      <a href="{{ settings.repo_url }}">GitHub-Repo</a> eingetragen wurde.{% else %}oben ins Suchfeld eingefügt,
+      ausgewertet und mit „Beobachten“ gespeichert wurde.{% endif %}</p>
   </div>
+  {% if static %}
+  <form class="vorschlag" id="vorschlagen" novalidate data-muster="{{ vorschlag_muster }}"
+        data-praefix="{{ settings.consultation_url }}/" data-label="{{ settings.consultation|upper }}"
+        data-issue="{{ settings.repo_url }}/issues/new?template=antrag-vorschlagen.yml&amp;title=Antrag+aufnehmen&amp;link=">
+    <label for="vorschlag-link"><strong>Antrag in der Sammelphase vorschlagen</strong></label>
+    <input id="vorschlag-link" name="link" type="text" inputmode="url" autocomplete="off" spellcheck="false" maxlength="300"
+           placeholder="{{ settings.consultation_url }}/<antrag>/<id>" aria-describedby="vorschlag-meldung vorschlag-hinweis">
+    <div class="vorschlag-wege actions">
+      <button name="ziel" value="github">{{ icon(href('static', path='icons/github.svg')) }}Per GitHub vorschlagen</button>
+      {% if settings.vorschlag_mail %}<button class="zweit" name="ziel" value="mail" data-adresse="{{ settings.vorschlag_mail }}">Per Mail</button>{% endif %}
+      {% if settings.vorschlag_threema %}<button class="zweit" name="ziel" value="threema" data-adresse="{{ settings.vorschlag_threema }}">{{ icon(href('static', path='icons/threema.svg')) }}Per Threema</button>{% endif %}
+      {% if settings.vorschlag_signal %}<button class="zweit" name="ziel" value="signal" data-adresse="{{ settings.vorschlag_signal }}">{{ icon(href('static', path='icons/signal.svg')) }}Per Signal</button>{% endif %}
+    </div>
+    <p class="vorschlag-meldung" id="vorschlag-meldung" role="alert" hidden></p>
+    <p class="hint" id="vorschlag-hinweis">Nur Direktlinks von {{ settings.consultation_url }}/…. Per GitHub (Konto nötig)
+      wird der Link automatisch geprüft und als Änderung vorbereitet{% if settings.vorschlag_mail or settings.vorschlag_threema or settings.vorschlag_signal %};
+      ohne Konto geht es per Nachricht – der Link wird von Hand eingetragen{% endif %}. Nach der Freigabe erscheint der Antrag
+      hier – mit Titel, Zahlen und kurzem Auszug, ohne Namen.</p>
+  </form>
+  {% endif %}
   {% if needs_support %}
   <table>
     <thead><tr><th>Antrag</th><th>Stand</th><th>Frauen</th><th>Es fehlen</th>{% if trends %}<th>Trend bis zur Frist</th>{% endif %}</tr></thead>
     <tbody>
     {% for item in needs_support %}{% set q = item.detail.quorum %}
       <tr>
-        <td><a href="{{ href('auswertung', url=item.url) }}">{{ item.detail.title }}</a></td>
+        <td><a href="{{ href('auswertung', url=item.url) }}">{{ item.detail.title }}</a>{{ auszug(item.detail) }}</td>
         <td>{{ q.current_total }} / {{ q.min_total }}{{ bar(q.progress_total, 'gesamt') }}</td>
         <td>{% if q.min_women is not none %}{{ q.current_women }} / {{ q.min_women }}{{ bar(q.progress_women, 'Frauen') }}{% else %}–{% endif %}</td>
         <td>{{ summary(q) }}</td>
