@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "_quorum.html" import icon %}
 {% block title %}Sharepic{% endblock %}
 {% block head %}<script src="{{ href('static', path='sharepic.js') }}" defer></script>{% endblock %}
 {% block content %}
@@ -9,6 +10,7 @@
   <img id="sharepic" class="sharepic" src="{{ href('sharepic_svg', url=detail.url) }}" width="1080" height="1350"
        alt="Sharepic: {{ detail.title }} – es fehlen noch {{ detail.quorum.still_needed }} Mitantragsteller*innen, Aufruf zum Mitzeichnen mit QR-Code">
   <p class="actions">
+    <button type="button" data-png-teilen="sharepic" data-name="sharepic-{{ dateiname }}.png" hidden>{{ icon(href('static', path='icons/teilen.svg')) }}Bild teilen …</button>
     <button type="button" data-png="sharepic" data-name="sharepic-{{ dateiname }}.png">Als PNG herunterladen</button>
     <a class="button-secondary" href="{{ href('sharepic_svg', url=detail.url) }}" download="sharepic-{{ dateiname }}.svg">Als SVG herunterladen</a>
   </p>

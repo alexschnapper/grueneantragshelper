@@ -102,6 +102,20 @@ Fristende, wenn Frauen fehlen (sonst ab 48 Stunden) – erscheint ein Antrag obe
 bei 74 %, Frauenquorum bei 60 % – noch 18 Frauen nötig …“). Die Auswertungsseite bietet zusätzlich einen
 gezielten **Aufruf an Frauennetzwerke** zum Kopieren.
 
+**Teilen**: Mobilisierungs-Text und Aufruf an Frauennetzwerke lassen sich vor dem Senden anpassen und direkt
+weitergeben – geteilt wird der Text, wie er im Feld steht:
+
+| Button | Was passiert |
+|---|---|
+| **Teilen …** | öffnet das Teilen-Menü des Geräts (Signal, Threema, WhatsApp, Telegram, Mail …) mit fertigem Text; erscheint nur, wo der Browser das kann (vor allem auf dem Handy) |
+| **Threema** | öffnet Threema mit vorausgefülltem Text, die Empfänger*in wird in der App gewählt |
+| **Signal** | kopiert den Text (Signal kann per Link keinen Text vorausfüllen) – im Chat einfügen |
+| **Mail** | öffnet das Mailprogramm mit Betreff und Text |
+
+**Sharepic**: „Sharepic erstellen“ zeigt unter dem Mobilisierungs-Text ein Bild (1080 × 1350) mit fehlenden
+Personen und Frauen, Fortschritt, Stand, Antragsschluss und QR-Code zum Original. Es lässt sich als PNG oder SVG
+herunterladen und – wo das Gerät es kann – mit **„Bild teilen …“** direkt an Signal, Threema oder WhatsApp schicken.
+
 ## 🌐 GitHub Pages
 
 Der Workflow [`.github/workflows/pages.yml`](.github/workflows/pages.yml) hält die Seite aktuell und

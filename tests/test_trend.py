@@ -148,6 +148,9 @@ def test_auswertungsseite_zeigt_ampel_und_text(tmp_path, monkeypatch):
     assert "Rot · Scheitern droht" in html
     assert "Ab jetzt sind mindestens 2,7 Frauen/h nötig." in html
     assert 'data-copy="mobilisierung"' in html and "kopieren.js" in html
+    # Teilen-Buttons für beide Texte; „Teilen …“ (Gerätemenü) erst per JavaScript sichtbar
+    assert html.count('data-teilen="threema"') == 2 and html.count('data-teilen="signal"') == 2
+    assert 'data-quelle="aufruf-frauen"' in html and 'data-teilen="system" hidden' in html
     assert 'data-copy="aufruf-frauen"' in html and "bis heute 22:00 Uhr nur noch 27 Mitantragstellerinnen" in html
     assert "Muster" not in html
 
