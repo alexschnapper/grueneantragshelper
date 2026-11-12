@@ -1,7 +1,8 @@
 {% extends "base.html" %}
 {% from "_quorum.html" import ampel, bar, summary %}
 {% block title %}{{ entry.prefix if entry else 'Auswertung' }}{% endblock %}
-{% block head %}{% if mobilisierung %}<script src="{{ href('static', path='kopieren.js') }}" defer></script>{% endif %}{% endblock %}
+{% block head %}{% if mobilisierung %}<script src="{{ href('static', path='kopieren.js') }}" defer></script>
+<script src="{{ href('static', path='sharepic.js') }}" defer></script>{% endif %}{% endblock %}
 {% block content %}
 <section>
   <p class="kind">{{ 'Änderungsantrag' if detail.kind == 'amendment' else 'Antrag' }}{% if entry %} · {{ entry.agenda_item }}{% endif %}</p>
@@ -74,8 +75,19 @@
     <h3>Mobilisierungs-Text</h3>
     <textarea id="mobilisierung" class="snippet" rows="4" aria-label="Mobilisierungs-Text">{{ mobilisierung }}</textarea>
     <p class="actions"><button type="button" data-copy="mobilisierung">In die Zwischenablage kopieren</button>
-      <a class="button-secondary" href="{{ href('sharepic', url=detail.url) }}">Sharepic erstellen</a>
       <small class="hint">Für Signal, WhatsApp oder Mail – vor dem Senden anpassbar.</small></p>
+    <details class="sharepic-box">
+      <summary class="button-secondary">Sharepic erstellen</summary>
+      {# loading="lazy": Das Bild wird erst beim Aufklappen erzeugt bzw. geladen #}
+      <img id="sharepic" class="sharepic" loading="lazy" src="{{ href('sharepic_svg', url=detail.url) }}" width="1080" height="1350"
+           alt="Sharepic: {{ detail.title }} – es fehlen noch {{ detail.quorum.still_needed }} Mitantragsteller*innen, Aufruf zum Mitzeichnen mit QR-Code">
+      <p class="actions">
+        <button type="button" data-png="sharepic" data-name="sharepic-{{ sharepic_name }}.png">Als PNG herunterladen</button>
+        <a class="button-secondary" href="{{ href('sharepic_svg', url=detail.url) }}" download="sharepic-{{ sharepic_name }}.svg">Als SVG herunterladen</a>
+        <a href="{{ href('sharepic', url=detail.url) }}">Eigene Seite zum Weitergeben</a>
+      </p>
+      <p class="hint">Format 1080 × 1350 (Instagram, Signal, WhatsApp). Der QR-Code führt zum Original auf antraege.gruene.de.</p>
+    </details>
     {% endif %}
 
     {% if aufruf_frauen %}

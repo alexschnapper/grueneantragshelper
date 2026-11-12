@@ -78,7 +78,11 @@ def test_sharepic_im_statischen_export(tmp_path, monkeypatch):
     build.build_site(out, Settings(db_path=tmp_path / "x.sqlite3", fristen=Fristen(frist, frist)), watch_urls=[URL])
 
     detail = (out / "antrag" / "wasser-antrag-1--999.html").read_text(encoding="utf-8")
-    assert 'href="../sharepic/wasser-antrag-1--999.html">Sharepic erstellen</a>' in detail
+    # Vorschau direkt auf der Auswertungsseite (aufklappbar), Downloads darunter
+    assert '<summary class="button-secondary">Sharepic erstellen</summary>' in detail
+    assert 'src="../sharepic/wasser-antrag-1--999.svg"' in detail
+    assert 'data-name="sharepic-wasser-antrag-1--999.png"' in detail and "sharepic.js" in detail
+    assert detail.index('src="../sharepic/wasser-antrag-1--999.svg"') < detail.index("Als PNG herunterladen")
     page = (out / "sharepic" / "wasser-antrag-1--999.html").read_text(encoding="utf-8")
     assert 'src="../sharepic/wasser-antrag-1--999.svg"' in page and "sharepic.js" in page
     svg = (out / "sharepic" / "wasser-antrag-1--999.svg").read_text(encoding="utf-8")

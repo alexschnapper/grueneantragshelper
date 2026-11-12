@@ -6,6 +6,7 @@ from typing import AbstractSet, Callable, List, Optional, Sequence
 
 from . import charts, dashboard, stand, trend, zeitplan
 from .client import FetchRecord
+from .links import sharepic_page
 from .models import (ActivityEntry, ConsultationIndex, Detail, IndexEntry, active_first, agenda_label,
                      group_activity)
 from .service import MAX_ACTIVITY_PAGES, STATS_DELAY_SECONDS, Antragshelper, WatchedItem
@@ -46,6 +47,7 @@ def trend_context(helper: Antragshelper, detail: Detail) -> dict:
         "aufruf_frauen": trend.aufruf_frauen(detail.title, detail.url, detail.kind, t) if t else None,
         "zahl": trend.zahl,
         "restzeit_text": trend.restzeit_text,
+        "sharepic_name": sharepic_page(detail.url, "")[len("sharepic/"):-1],
     }
 
 

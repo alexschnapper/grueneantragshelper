@@ -132,3 +132,7 @@ td.path { word-break: break-all; font-size: .85rem; }
 .button-secondary { display: inline-block; padding: 7px 14px; border: 1px solid var(--green); border-radius: 6px; color: var(--green); text-decoration: none; }
 .button-secondary:hover { background: color-mix(in srgb, var(--green-light) 15%, transparent); }
 img.sharepic { display: block; width: 100%; max-width: 432px; height: auto; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,.15); margin: 16px 0; }
+.sharepic-box { margin: 12px 0; }
+.sharepic-box summary { list-style: none; cursor: pointer; }
+.sharepic-box summary::-webkit-details-marker { display: none; }
+.sharepic-box[open] summary { background: color-mix(in srgb, var(--green-light) 15%, transparent); }
