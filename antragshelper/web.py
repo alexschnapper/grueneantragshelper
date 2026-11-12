@@ -6,14 +6,14 @@ from pathlib import Path
 from urllib.parse import quote
 
 from fastapi import FastAPI, Form, Request
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from . import dashboard, stand, views
+from . import dashboard, sharepic, stand, views
 from .client import SourceError
 from .config import settings
-from .links import Links
+from .links import Links, sharepic_page
 from .service import MAX_ACTIVITY_PAGES, Antragshelper
 
 _HERE = Path(__file__).parent
@@ -82,6 +82,27 @@ def evaluation(request: Request, url: str):
         min_total=min_total,
         **views.trend_context(helper, detail),
     )
+
+
+@app.get("/sharepic", response_class=HTMLResponse)
+def sharepic_view(request: Request, url: str):
+    try:
+        detail = helper.detail(url)
+    except SourceError as e:
+        return _render(request, "error.html", 502, message=str(e))
+    if not detail.collecting:
+        return _render(request, "error.html", 404, message="Ein Sharepic gibt es nur für Anträge in der Sammelphase.")
+    return _render(request, "sharepic.html", detail=detail, dateiname=sharepic_page(url, "")[len("sharepic/"):-1])
+
+
+@app.get("/sharepic.svg")
+def sharepic_svg(url: str):
+    try:
+        detail = helper.detail(url)
+        image = sharepic.svg(detail, datetime.now(), settings.frist_fuer(detail.kind))
+    except (SourceError, ValueError) as e:
+        return Response(str(e), status_code=404, media_type="text/plain; charset=utf-8")
+    return Response(image, media_type="image/svg+xml")
 
 
 @app.post("/beobachten")

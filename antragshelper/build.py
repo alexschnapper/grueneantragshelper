@@ -16,9 +16,9 @@ from typing import Dict, List, Optional
 
 from jinja2 import Environment, FileSystemLoader, select_autoescape
 
-from . import benachrichtigung, dashboard, stand, trend, views
+from . import benachrichtigung, dashboard, sharepic, stand, trend, views
 from .config import Settings
-from .links import Links, detail_page, list_page
+from .links import Links, detail_page, list_page, sharepic_page
 from .models import ConsultationIndex, Detail, IndexEntry, normalize_prefix
 from .service import MAX_ACTIVITY_PAGES, Antragshelper, WatchedItem
 
@@ -174,9 +174,15 @@ def build_site(out: Path, settings: Settings, details: bool = False, watch_urls:
                    without_quorum=views.is_without_quorum(detail, entry, index.min_total))
         for item in watched:
             if item.detail and item.url not in {e.url for e in index.entries}:
+                context = views.trend_context(helper, item.detail)
                 render("detail.html", detail_page(item.url), detail=item.detail, entry=None,
-                       published_amendments=[], collecting_amendments=[], history=[], watched=False,
-                       **views.trend_context(helper, item.detail))
+                       published_amendments=[], collecting_amendments=[], history=[], watched=False, **context)
+                if context["mobilisierung"]:
+                    image = sharepic.svg(item.detail, built_at, settings.frist_fuer(item.detail.kind))
+                    (out / sharepic_page(item.url, "svg")).parent.mkdir(parents=True, exist_ok=True)
+                    (out / sharepic_page(item.url, "svg")).write_text(image, encoding="utf-8")
+                    render("sharepic.html", sharepic_page(item.url), detail=item.detail,
+                           dateiname=sharepic_page(item.url, "")[len("sharepic/"):-1])
 
         shutil.copytree(_HERE / "static", out / "static")
         search_index = {

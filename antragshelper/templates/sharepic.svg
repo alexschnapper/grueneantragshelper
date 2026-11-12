@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="{{ breite }}" height="{{ hoehe }}" viewBox="0 0 {{ breite }} {{ hoehe }}" role="img" aria-label="{{ art }}: {{ titelzeilen|map(attribute=0)|join(' ') }}">
+  <defs>
+    <style>
+      text { font-family: 'Avenir Next', 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif; font-weight: 700; }
+      .gelb { fill: #ffe600; } .weiss { fill: #ffffff; } .tanne { fill: #005437; } .leise { fill: #ffffff; opacity: .72; }
+    </style>
+    <linearGradient id="hintergrund" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0b6b45"/><stop offset="1" stop-color="#003b26"/>
+    </linearGradient>
+    <!-- Freundliche Figur: runder Kopf, Schultern als Halbkreis -->
+    <g id="figur"><circle cy="-46" r="19"/><path d="M-30-6a30 30 0 0 1 60 0v34h-60z"/></g>
+  </defs>
+
+  <rect width="{{ breite }}" height="{{ hoehe }}" fill="url(#hintergrund)"/>
+  <circle cx="980" cy="90" r="220" fill="#8abd24" opacity=".10"/>
+  <circle cx="80" cy="1260" r="260" fill="#8abd24" opacity=".08"/>
+
+  <rect x="{{ 540 - art_breite / 2 }}" y="64" width="{{ art_breite }}" height="56" rx="28" fill="none" stroke="#ffe600" stroke-width="3"/>
+  <text x="540" y="102" text-anchor="middle" font-size="28" letter-spacing="2" class="gelb">{{ art }}</text>
+  {% for zeile, laenge in titelzeilen %}
+  <text x="540" y="{{ 196 + loop.index0 * 58 }}" text-anchor="middle" font-size="48" class="weiss"{% if laenge %} textLength="{{ laenge }}" lengthAdjust="spacingAndGlyphs"{% endif %}>{{ zeile }}</text>
+  {% endfor %}
+
+  {% for key, fehlen, label, dabei, anteil, x, w in spalten %}
+  <rect x="{{ x }}" y="360" width="{{ w }}" height="470" rx="36" fill="#ffffff" fill-opacity=".08"/>
+  {% set mitte = x + w / 2 %}
+  <g transform="translate({{ mitte }} 470)" fill="{{ '#ffe600' if key == 'frauen' else '#a8d07c' }}" stroke="#0a5a3b" stroke-width="6" paint-order="stroke">
+    <use href="#figur" transform="translate(-52 6) scale(0.82)"/>
+    <use href="#figur" transform="translate(52 6) scale(0.82)"/>
+    <use href="#figur"/>
+  </g>
+  <text x="{{ mitte }}" y="650" text-anchor="middle" font-size="150" class="gelb">{{ fehlen }}</text>
+  <text x="{{ mitte }}" y="706" text-anchor="middle" font-size="40" class="weiss">{{ label }}</text>
+  <rect x="{{ mitte - 150 }}" y="740" width="300" height="14" rx="7" fill="#ffffff" fill-opacity=".18"/>
+  <rect x="{{ mitte - 150 }}" y="740" width="{{ '%.1f'|format(300 * anteil) }}" height="14" rx="7" fill="{{ '#ffe600' if key == 'frauen' else '#a8d07c' }}"/>
+  <text x="{{ mitte }}" y="796" text-anchor="middle" font-size="28" font-weight="500" class="leise">{{ dabei }}</text>
+  {% endfor %}
+
+  <rect x="140" y="880" width="800" height="104" rx="52" class="gelb"/>
+  <text x="540" y="950" text-anchor="middle" font-size="52" class="tanne">Jetzt mitzeichnen →</text>
+
+  <text x="80" y="1088" font-size="30" font-weight="500" class="leise">Scannen oder direkt auf</text>
+  <text x="80" y="1150" font-size="58" class="weiss">antraege.gruene.de</text>
+  <text x="80" y="1204" font-size="22" font-weight="500" class="leise"{% if stand_laenge %} textLength="{{ stand_laenge }}" lengthAdjust="spacingAndGlyphs"{% endif %}>{{ stand }}</text>
+  <rect x="800" y="1030" width="200" height="200" rx="24" fill="#ffffff"/>
+  <g transform="translate(820 1050) scale({{ '%.4f'|format(160 / qr_module) }})" fill="#003b26"><path d="{{ qr }}"/></g>
+
+  <text x="80" y="1290" font-size="19" font-weight="500" class="leise">Erstellt mit Unterstützung von KI und dem Grünen Antragshelper</text>
+  <text x="80" y="1316" font-size="19" font-weight="500" class="leise">{{ site_url }}</text>
+</svg>

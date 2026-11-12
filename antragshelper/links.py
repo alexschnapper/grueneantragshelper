@@ -19,6 +19,11 @@ def detail_page(url: str) -> str:
     return "antrag/" + "--".join(parts) + ".html"
 
 
+def sharepic_page(url: str, ext: str = "html") -> str:
+    """'https://…/52bdk/antrag-123/25769' -> 'sharepic/antrag-123--25769.html' (bzw. '.svg')."""
+    return "sharepic/" + detail_page(url)[len("antrag/"):-len(".html")] + "." + ext
+
+
 def list_page(art: str = "", top: str = "", stand: str = "") -> str:
     return f"liste/{art or 'alle'}_{slug(top) if top else 'alle'}_{stand or 'alle'}.html"
 
@@ -48,6 +53,8 @@ class Links:
                 return "/liste" + ("?" + query if query else "")
             if name == "static":
                 return "/static/" + params["path"]
+            if name in ("sharepic", "sharepic_svg"):
+                return ("/sharepic" if name == "sharepic" else "/sharepic.svg") + "?url=" + quote(params["url"], safe="")
             raise KeyError(name)
 
         page = {"index": "index.html", "dashboard": "dashboard.html", "aktivitaet": "aktivitaet.html",
@@ -61,4 +68,6 @@ class Links:
             return self.root + list_page(params.get("art", ""), params.get("top", ""), params.get("stand", ""))
         if name == "static":
             return self.root + "static/" + params["path"]
+        if name in ("sharepic", "sharepic_svg"):
+            return self.root + sharepic_page(params["url"], "html" if name == "sharepic" else "svg")
         raise KeyError(name)
