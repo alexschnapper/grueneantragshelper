@@ -82,9 +82,11 @@ def test_sharepic_im_statischen_export(tmp_path, monkeypatch):
     assert '<summary class="button-secondary">Sharepic erstellen</summary>' in detail
     assert 'src="../sharepic/wasser-antrag-1--999.svg"' in detail
     assert 'data-name="sharepic-wasser-antrag-1--999.png"' in detail and "sharepic.js" in detail
+    assert 'data-png-teilen="sharepic"' in detail
     assert detail.index('src="../sharepic/wasser-antrag-1--999.svg"') < detail.index("Als PNG herunterladen")
     page = (out / "sharepic" / "wasser-antrag-1--999.html").read_text(encoding="utf-8")
     assert 'src="../sharepic/wasser-antrag-1--999.svg"' in page and "sharepic.js" in page
+    assert 'data-png-teilen="sharepic"' in page
     svg = (out / "sharepic" / "wasser-antrag-1--999.svg").read_text(encoding="utf-8")
     assert "39 Personen fehlen" in _text(svg) and "27 Frauen fehlen" in _text(svg)
     assert "Muster" not in svg and "Muster" not in page

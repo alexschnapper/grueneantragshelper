@@ -175,3 +175,6 @@ button.zweit { background: transparent; color: var(--green); border: 1px solid v
 .icon { display: inline-block; width: 1.1em; height: 1.1em; margin-right: .45em; vertical-align: -.18em; background: currentColor;
   -webkit-mask-position: center; mask-position: center; -webkit-mask-size: contain; mask-size: contain;
   -webkit-mask-repeat: no-repeat; mask-repeat: no-repeat; }
+.teilen { display: inline-flex; flex-wrap: wrap; gap: 6px 8px; }
+.teilen-hinweis { flex-basis: 100%; font-size: .85rem; color: var(--green); }
+.teilen-hinweis:empty { display: none; }

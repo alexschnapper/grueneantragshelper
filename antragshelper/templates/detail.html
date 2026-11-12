@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_quorum.html" import ampel, auszug, bar, summary %}
+{% from "_quorum.html" import ampel, auszug, bar, icon, summary, teilen with context %}
 {% block title %}{{ entry.prefix if entry else 'Auswertung' }}{% endblock %}
 {% block head %}{% if mobilisierung %}<script src="{{ href('static', path='kopieren.js') }}" defer></script>
 <script src="{{ href('static', path='sharepic.js') }}" defer></script>{% endif %}{% endblock %}
@@ -95,13 +95,15 @@
     <h3>Mobilisierungs-Text</h3>
     <textarea id="mobilisierung" class="snippet" rows="4" aria-label="Mobilisierungs-Text">{{ mobilisierung }}</textarea>
     <p class="actions"><button type="button" data-copy="mobilisierung">In die Zwischenablage kopieren</button>
-      <small class="hint">Für Signal, WhatsApp oder Mail – vor dem Senden anpassbar.</small></p>
+      {{ teilen('mobilisierung', 'Unterstützung für unseren Antrag') }}</p>
+    <p class="hint">Vor dem Senden anpassbar – geteilt wird der Text, wie er im Feld steht.</p>
     <details class="sharepic-box">
       <summary class="button-secondary">Sharepic erstellen</summary>
       {# loading="lazy": Das Bild wird erst beim Aufklappen erzeugt bzw. geladen #}
       <img id="sharepic" class="sharepic" loading="lazy" src="{{ href('sharepic_svg', url=detail.url) }}" width="1080" height="1350"
            alt="Sharepic: {{ detail.title }} – es fehlen noch {{ detail.quorum.still_needed }} Mitantragsteller*innen, Aufruf zum Mitzeichnen mit QR-Code">
       <p class="actions">
+        <button type="button" data-png-teilen="sharepic" data-name="sharepic-{{ sharepic_name }}.png" hidden>{{ icon(href('static', path='icons/teilen.svg')) }}Bild teilen …</button>
         <button type="button" data-png="sharepic" data-name="sharepic-{{ sharepic_name }}.png">Als PNG herunterladen</button>
         <a class="button-secondary" href="{{ href('sharepic_svg', url=detail.url) }}" download="sharepic-{{ sharepic_name }}.svg">Als SVG herunterladen</a>
         <a href="{{ href('sharepic', url=detail.url) }}">Eigene Seite zum Weitergeben</a>
@@ -113,8 +115,9 @@
     {% if aufruf_frauen %}
     <h3>Aufruf an Frauennetzwerke</h3>
     <textarea id="aufruf-frauen" class="snippet" rows="3" aria-label="Aufruf an Frauennetzwerke">{{ aufruf_frauen }}</textarea>
-    <p><button type="button" data-copy="aufruf-frauen">In die Zwischenablage kopieren</button>
-      <small class="hint">Nennt nur die fehlenden Frauen – Anrede (z. B. LAG Frauenpolitik, Frauenrat) vor dem Senden ergänzen.</small></p>
+    <p class="actions"><button type="button" data-copy="aufruf-frauen">In die Zwischenablage kopieren</button>
+      {{ teilen('aufruf-frauen', 'Unser Antrag braucht noch Mitantragstellerinnen') }}</p>
+    <p class="hint">Nennt nur die fehlenden Frauen – Anrede (z. B. LAG Frauenpolitik, Frauenrat) vor dem Senden ergänzen.</p>
     {% endif %}
   {% endif %}
 

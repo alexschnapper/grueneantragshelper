@@ -128,7 +128,7 @@ def test_eingetragene_kontakte():
 
 def test_icons_liegen_bei_und_sind_harmlos():
     icons = Path(__file__).parent.parent / "antragshelper" / "static" / "icons"
-    for name in ("github", "signal", "threema"):
+    for name in ("github", "signal", "threema", "teilen", "mail"):
         svg = (icons / f"{name}.svg").read_text(encoding="utf-8")
         assert svg.startswith("<svg") and "<script" not in svg and "href" not in svg
     assert "CC0" in (icons / "LICENSE.md").read_text(encoding="utf-8")
