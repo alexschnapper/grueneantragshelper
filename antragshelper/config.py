@@ -52,6 +52,9 @@ class Settings:
     vorschlag_mail: str = "xy29m6nsi@mozmail.com"  # Firefox-Relay-Alias, leitet weiter
     vorschlag_threema: str = "UBK44SB7"  # öffentliche Threema-ID
     vorschlag_signal: str = "https://signal.me/#eu/33gqd5m61KSbd74K2v2AwzmPBamjFlQd7oFR54Bq5YyYzTr02dpD2J2oTT2QoCDY"
+    # Teilen im Fediverse: voreingestellte Mastodon-Instanz (im Browser änderbar) und angehängte Hashtags
+    mastodon_instanz: str = "gruene.social"
+    teilen_hashtags: str = "#BDK #52BDK #Grüne #BDK52"
 
     @property
     def consultation_url(self) -> str:

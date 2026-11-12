@@ -178,6 +178,9 @@ button.zweit { background: transparent; color: var(--green); border: 1px solid v
 .teilen { display: inline-flex; flex-wrap: wrap; gap: 6px 8px; }
 .teilen-hinweis { flex-basis: 100%; font-size: .85rem; color: var(--green); }
 .teilen-hinweis:empty { display: none; }
+button.textknopf { background: none; border: 0; padding: 0 2px; color: var(--green); font-size: .85rem; text-decoration: underline; cursor: pointer; }
+.instanz-form { display: inline-flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.instanz-form input { width: 14em; max-width: 100%; }
 /* Schmale Bildschirme: breite Tabellen scrollen in sich, statt die ganze Seite zu verbreitern */
 @media (max-width: 600px) { main table { display: block; max-width: 100%; overflow-x: auto; } }
 /* Lange URLs und Kennungen (z. B. User-Agent) brechen um, statt die Seite zu verbreitern */
