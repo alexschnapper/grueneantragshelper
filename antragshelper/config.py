@@ -49,7 +49,7 @@ class Settings:
     fristen: Optional[Fristen] = None
     # Wege, Anträge ohne GitHub-Konto vorzuschlagen (stehen öffentlich auf der Seite; leer = Button ausgeblendet).
     # Signal nur als Benutzername oder Benutzernamen-Link (https://signal.me/#eu/…), nie mit Telefonnummer.
-    vorschlag_mail: str = ""
+    vorschlag_mail: str = "xy29m6nsi@mozmail.com"  # Firefox-Relay-Alias, leitet weiter
     vorschlag_threema: str = "UBK44SB7"  # öffentliche Threema-ID
     vorschlag_signal: str = "https://signal.me/#eu/33gqd5m61KSbd74K2v2AwzmPBamjFlQd7oFR54Bq5YyYzTr02dpD2J2oTT2QoCDY"
 

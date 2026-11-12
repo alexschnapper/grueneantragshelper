@@ -102,7 +102,8 @@ def test_wege_ohne_github_nur_wenn_eingetragen(tmp_path, monkeypatch):
     }
     monkeypatch.setattr(httpx.Client, "get", lambda self, url, **kw: httpx.Response(
         200, text=pages.get(url, "<html></html>"), request=httpx.Request("GET", url)))
-    build.build_site(tmp_path / "ohne", Settings(db_path=tmp_path / "x.sqlite3", vorschlag_threema="", vorschlag_signal=""))
+    build.build_site(tmp_path / "ohne", Settings(db_path=tmp_path / "x.sqlite3", vorschlag_mail="",
+                                                vorschlag_threema="", vorschlag_signal=""))
     ohne = (tmp_path / "ohne" / "index.html").read_text(encoding="utf-8")
     assert 'value="github"' in ohne and 'value="mail"' not in ohne and 'value="threema"' not in ohne
 
@@ -120,6 +121,7 @@ def test_wege_ohne_github_nur_wenn_eingetragen(tmp_path, monkeypatch):
 def test_eingetragene_kontakte():
     s = Settings()
     assert s.vorschlag_threema == "UBK44SB7"
+    assert s.vorschlag_mail.endswith("@mozmail.com")  # Alias, nicht die private Adresse
     # Signal als Benutzernamen-Link, nie als Telefonnummer (signal.me/#p/+49…)
     assert s.vorschlag_signal.startswith("https://signal.me/#eu/") and "#p/" not in s.vorschlag_signal
 
