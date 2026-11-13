@@ -31,12 +31,13 @@
 {% endif %}
 {%- endmacro %}
 
+{# Ohne Leerraum am Ende, damit z. B. „Noch {{ summary(q) }}.“ kein Leerzeichen vor dem Punkt bekommt #}
 {% macro summary(q) -%}
-{% if q.reached %}
+{% if q.reached -%}
   <strong class="ok">Quorum erreicht</strong> (mindestens {{ q.min_total }})
-{% else %}
+{%- else -%}
   <strong>{{ q.still_needed }}</strong> fehlen{% if q.min_women is not none %}, davon mindestens <strong>{{ q.missing_women }}</strong> Frauen{% endif %}
-{% endif %}
+{%- endif %}
 {%- endmacro %}
 
 {# Icon als Maske in Textfarbe. Die Adresse steht direkt am Element, damit sie relativ zur Seite aufgelöst wird

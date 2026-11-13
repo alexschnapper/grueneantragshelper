@@ -76,6 +76,25 @@ def quorum_scatter(points: Sequence[QuorumPoint], min_total: int, min_women: int
     return _svg(parts, "Streudiagramm: Mitantragsteller*innen und Frauen je Antrag mit Quorum-Linien")
 
 
+# Mindestabstand (px) zwischen der Beschriftung einer Quorum-Linie und Datenpunkten bzw. Namen der Linien
+LABEL_ABSTAND = 18
+
+
+def _ref_label_position(ref_y: float, ends: "dict[str, List[float]]") -> "tuple[float, str, float]":
+    """Ort für „91 nötig gesamt“: an dem Rand mit mehr Platz, über der Linie oder – wenn es dort eng ist – darunter."""
+    def frei(seite: str, y: float) -> float:
+        return min((abs(y - belegt) for belegt in ends[seite]), default=float("inf"))
+
+    oben, unten = ref_y - 6, ref_y + 16
+    kandidaten = [(frei(seite, y), -i, seite, y)
+                  for i, (seite, y) in enumerate((("rechts", oben), ("links", oben), ("rechts", unten), ("links", unten)))]
+    # Erste Wahl bleibt rechts oben, solange dort genug Platz ist
+    _, _, seite, y = next((k for k in kandidaten if k[0] >= LABEL_ABSTAND), max(kandidaten))
+    if seite == "rechts":
+        return W - PAD_R - 4, "end", y
+    return PAD_L + 4, "start", y
+
+
 def progress_lines(history: Sequence, min_total: Optional[int], min_women: Optional[int]) -> Optional[Markup]:
     """Verlauf eines beobachteten Antrags (Snapshots, älteste zuerst); None bei < 2 Punkten."""
     rows = [r for r in history if r["current_total"] is not None]
@@ -88,10 +107,18 @@ def progress_lines(history: Sequence, min_total: Optional[int], min_women: Optio
     sx = lambda t: PAD_L + (t - t0).total_seconds() / span * (W - PAD_L - PAD_R)  # noqa: E731
     sy = lambda v: H - PAD_B - v / y_max * (H - PAD_T - PAD_B)  # noqa: E731
     parts = _frame(1, y_max, 2, y_step, f"{t0:%d.%m. %H:%M} – {t1:%d.%m. %H:%M}", "Personen", x_fmt=lambda v: "")
+    # Belegte Höhen an beiden Rändern: erste bzw. letzte Punkte, rechts zusätzlich die Namen der Linien
+    ends = {"links": [], "rechts": []}
+    for key in ("current_total", "current_women"):
+        values = [r[key] for r in rows if r[key] is not None]
+        if values:
+            ends["links"].append(sy(values[0]))
+            ends["rechts"] += [sy(values[-1]), sy(values[-1]) - 12]
     for ref, label in ((min_total, "nötig gesamt"), (min_women, "nötig Frauen")):
         if ref is not None:
+            x, anchor, y = _ref_label_position(sy(ref), ends)
             parts.append(f'<line class="ref" x1="{PAD_L}" x2="{W - PAD_R}" y1="{sy(ref):.1f}" y2="{sy(ref):.1f}"/>'
-                         f'<text class="ref-label" x="{W - PAD_R - 4}" y="{sy(ref) - 6:.1f}" text-anchor="end">{ref} {label}</text>')
+                         f'<text class="ref-label" x="{x}" y="{y:.1f}" text-anchor="{anchor}">{ref} {label}</text>')
     for key, cls, name in (("current_total", "s1", "gesamt"), ("current_women", "s2", "Frauen")):
         pts = [(sx(t), sy(r[key])) for t, r in zip(times, rows) if r[key] is not None]
         if not pts:
