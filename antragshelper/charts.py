@@ -43,7 +43,7 @@ def _frame(x_max: float, y_max: float, x_step: float, y_step: float, x_label: st
         x += x_step
     out.append(f'<line class="axis" x1="{PAD_L}" x2="{W - PAD_R}" y1="{H - PAD_B}" y2="{H - PAD_B}"/>')
     out.append(f'<text class="axis-label" x="{(PAD_L + W - PAD_R) / 2}" y="{H - 6}" text-anchor="middle">{escape(x_label)}</text>')
-    out.append(f'<text class="axis-label" x="12" y="{(PAD_T + H - PAD_B) / 2}" text-anchor="middle" '
+    out.append(f'<text class="axis-label axis-y" x="12" y="{(PAD_T + H - PAD_B) / 2}" text-anchor="middle" '
                f'transform="rotate(-90 12 {(PAD_T + H - PAD_B) / 2})">{escape(y_label)}</text>')
     return out
 
@@ -127,6 +127,7 @@ def progress_lines(history: Sequence, min_total: Optional[int], min_women: Optio
         for (x, y), t, r in zip(pts, times, rows):
             parts.append(f'<circle class="dot {cls}" cx="{x:.1f}" cy="{y:.1f}" r="4">'
                          f'<title>{t:%d.%m. %H:%M}: {r[key]} {name}</title></circle>')
-        x, y = pts[-1]
-        parts.append(f'<text class="direct-label" x="{min(x + 6, W - PAD_R - 40):.1f}" y="{y - 8:.1f}">{name}</text>')
+        # Der letzte Stand liegt immer am rechten Rand: rechtsbündig, damit der Name bei jeder Schriftgröße passt
+        _, y = pts[-1]
+        parts.append(f'<text class="direct-label" x="{W - PAD_R}" y="{y - 8:.1f}" text-anchor="end">{name}</text>')
     return _svg(parts, "Verlauf der Unterstützer*innen und Frauen über die Zeit")

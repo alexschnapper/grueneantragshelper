@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% from "_quorum.html" import ampel, auszug, bar, icon, summary, teilen with context %}
+{% from "_quorum.html" import ampel, auszug, bar, icon, legend, summary, teilen with context %}
 {% block title %}{{ entry.prefix if entry else 'Auswertung' }}{% endblock %}
 {% block head %}{% if mobilisierung %}<script src="{{ href('static', path='kopieren.js') }}" defer></script>
 <script src="{{ href('static', path='sharepic.js') }}" defer></script>{% endif %}{% endblock %}
@@ -89,6 +89,13 @@
       {% else %}Tempo der letzten {{ '%.0f'|format(trend.tempo.stunden) }} Stunden.{% endif %}
       {% if not trend.frist %}Ohne Frist keine Prognose: Für „{{ settings.consultation }}“ ist kein Antragsschluss
         hinterlegt (<code>FRISTEN</code> in <code>antragshelper/config.py</code>).{% endif %}</p>
+    {% endif %}
+
+    {% if verlauf_chart %}
+    <h3>Verlauf</h3>
+    {{ legend(['gesamt', 'Frauen'], ['s1', 's2']) }}
+    <div class="verlauf">{{ verlauf_chart }}</div>
+    <p class="hint">Gespeicherte Stände (nur bei Änderungen) mit den nötigen Zahlen als gestrichelte Linien. Punkte zeigen beim Darüberfahren Zeit und Stand.</p>
     {% endif %}
 
     {% if mobilisierung %}

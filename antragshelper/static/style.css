@@ -185,3 +185,5 @@ button.textknopf { background: none; border: 0; padding: 0 2px; color: var(--gre
 @media (max-width: 600px) { main table { display: block; max-width: 100%; overflow-x: auto; } }
 /* Lange URLs und Kennungen (z. B. User-Agent) brechen um, statt die Seite zu verbreitern */
 main a, main code { overflow-wrap: anywhere; }
+/* Verlauf auf der Antragsseite: Das SVG wird auf dem Handy auf ~55 % verkleinert, die Schrift deshalb größer */
+@media (max-width: 600px) { .verlauf svg.chart { font-size: 17px; } .verlauf svg.chart .axis-y { display: none; } }

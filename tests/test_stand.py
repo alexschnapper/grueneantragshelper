@@ -192,3 +192,26 @@ def test_check_baut_neu_wenn_ampel_umspringt(tmp_path, fake_site, monkeypatch, c
     stand_file.write_text(json.dumps(data), encoding="utf-8")
     assert _check(str(stand_file), watch_file) == 0
     assert "changed=true (Stand oder Trend eines beobachteten Antrags geändert" in capsys.readouterr().out
+
+
+def test_verlauf_auf_der_antragsseite(tmp_path, fake_site):
+    """Anträge in der Sammelphase zeigen den Verlauf als Diagramm – vor dem Mobilisierungs-Text."""
+    pages, _ = fake_site
+    sammel = f"{BASE}/52bdk/wasser-antrag-1/999"
+    ohne = f"{BASE}/52bdk/wasser-antrag-1/998"
+    pages[sammel] = pages[ohne] = (FIXTURES / "amendment_collecting.html").read_text(encoding="utf-8")
+    jetzt = datetime.now().replace(microsecond=0)
+    vorher = {"verlauf": {sammel: [
+        {"fetched_at": (jetzt - timedelta(hours=h)).isoformat(), "status": "Antragsteller*innen sammeln",
+         "min_total": 91, "min_women": 46, "current_total": g, "current_women": f, "reached": 0}
+        for h, g, f in ((20, 30, 10), (10, 40, 14))]}}
+    out = tmp_path / "site"
+    build.build_site(out, Settings(db_path=tmp_path / "x.sqlite3"), watch_urls=[sammel, ohne], previous=vorher)
+
+    html = (out / "antrag" / "wasser-antrag-1--999.html").read_text(encoding="utf-8")
+    assert "<h3>Verlauf</h3>" in html and '<svg class="chart"' in html
+    assert html.index("<h3>Verlauf</h3>") < html.index("Mobilisierungs-Text")
+    assert html.count('<circle class="dot s1"') == 3  # zwei frühere Stände plus der aktuelle (52 / 19)
+
+    # Ohne früheren Stand gibt es nur einen Punkt – kein Diagramm
+    assert "<h3>Verlauf</h3>" not in (out / "antrag" / "wasser-antrag-1--998.html").read_text(encoding="utf-8")

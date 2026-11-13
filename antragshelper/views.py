@@ -39,10 +39,14 @@ def overview(index: ConsultationIndex, watched: List[WatchedItem], trends: Optio
 
 
 def trend_context(helper: Antragshelper, detail: Detail) -> dict:
-    """Hochrechnung und Mobilisierungs-Text für die Auswertungsseite (nur lokale App)."""
+    """Hochrechnung, Verlaufsdiagramm und Mobilisierungs-Text für die Auswertungsseite."""
     t = helper.hochrechnung(detail)
+    q = detail.quorum
+    verlauf = (charts.progress_lines(list(reversed(helper.store.history(detail.url))), q.min_total, q.min_women)
+               if detail.collecting else None)
     return {
         "trend": t,
+        "verlauf_chart": verlauf,  # None bei weniger als zwei gespeicherten Ständen
         "mobilisierung": trend.mobilisierung(detail.title, detail.url, detail.kind, t) if t else None,
         "aufruf_frauen": trend.aufruf_frauen(detail.title, detail.url, detail.kind, t) if t else None,
         "zahl": trend.zahl,
