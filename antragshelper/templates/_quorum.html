@@ -60,3 +60,8 @@
 </span>
 <span class="teilen-hinweis" role="status"></span>
 {%- endmacro %}
+
+{# Legende für Diagramme mit mehreren Serien (Farben über .s1/.s2/.muted aus style.css) #}
+{% macro legend(names, classes) -%}
+<ul class="legend">{% for n in names %}<li><span class="swatch {{ classes[loop.index0] }}"></span>{{ n }}</li>{% endfor %}</ul>
+{%- endmacro %}

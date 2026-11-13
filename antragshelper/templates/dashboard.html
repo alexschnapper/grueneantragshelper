@@ -3,9 +3,7 @@
 {% block title %}Dashboard{% endblock %}
 {% block head %}{% if refresh.running and not static %}<meta http-equiv="refresh" content="5">{% endif %}{% endblock %}
 
-{% macro legend(names, classes) -%}
-<ul class="legend">{% for n in names %}<li><span class="swatch {{ classes[loop.index0] }}"></span>{{ n }}</li>{% endfor %}</ul>
-{%- endmacro %}
+{% from "_quorum.html" import legend %}
 
 {# Horizontale, gestapelte Balken in HTML (bricht sauber um, Hover über title) #}
 {% macro hbars(rows, names, classes) -%}

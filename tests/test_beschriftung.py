@@ -36,6 +36,13 @@ def _direct_labels(svg: str):
     return [(float(x), float(y)) for x, y in re.findall(r'<text class="direct-label" x="([\d.]+)" y="([\d.]+)"', svg)]
 
 
+def test_namen_der_linien_rechtsbuendig():
+    svg = str(charts.progress_lines(_verlauf([(70, 30), (80, 32), (88, 34), (96, 38)]), 91, 46))
+    assert svg.count('class="direct-label"') == 2
+    assert all(f'x="{charts.W - charts.PAD_R}"' in t and 'text-anchor="end"' in t
+               for t in re.findall(r'<text class="direct-label"[^>]*>', svg))
+
+
 def test_quorum_beschriftung_weicht_den_linien_aus():
     # Wie in der Demo: gesamt endet knapp über 91 – rechts wäre „91 nötig gesamt“ verdeckt
     svg = str(charts.progress_lines(_verlauf([(70, 30), (80, 32), (88, 34), (96, 38)]), 91, 46))

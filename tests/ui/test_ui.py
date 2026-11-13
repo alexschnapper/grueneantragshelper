@@ -144,3 +144,33 @@ def test_mastodon_mit_hashtags_und_eigener_instanz(seite, site):
     with seite.context.expect_page() as neu:
         seite.locator(".teilen[data-quelle=mobilisierung] [data-teilen=mastodon]").click()
     assert neu.value.url.startswith("https://mastodon.social/share?text=")
+
+
+def test_verlauf_vor_mobilisierung(seite, site):
+    seite.goto(site + DETAIL_ROT)
+    verlauf = seite.locator("h3", has_text="Verlauf")
+    expect(verlauf).to_be_visible()
+    diagramm = seite.locator(".verlauf svg.chart")
+    expect(diagramm).to_be_visible()
+    assert diagramm.bounding_box()["width"] > 300
+    mobil = seite.locator("h3", has_text="Mobilisierungs-Text")
+    assert verlauf.bounding_box()["y"] < diagramm.bounding_box()["y"] < mobil.bounding_box()["y"]
+    # Ohne Verlauf (nur ein Stand) kein Diagramm
+    seite.goto(site + DETAIL_OHNE)
+    expect(seite.locator(".verlauf svg.chart")).to_have_count(0)
+
+
+def test_verlauf_auf_dem_handy_lesbar_und_nichts_abgeschnitten(context, site):
+    context.set_default_timeout(10000)
+    seite = context.new_page()
+    seite.set_viewport_size({"width": 390, "height": 844})
+    seite.goto(site + DETAIL_ROT)
+    svg = seite.locator(".verlauf svg.chart")
+    expect(svg).to_be_visible()
+    ergebnis = svg.evaluate("""s => { const r = s.getBoundingClientRect();
+        const texte = [...s.querySelectorAll('text')].filter(t => t.textContent.trim() && getComputedStyle(t).display !== 'none');
+        return { klein: Math.min(...texte.map(t => t.getBoundingClientRect().height)),
+                 raus: texte.filter(t => { const b = t.getBoundingClientRect();
+                   return b.left < r.left - 1 || b.right > r.right + 1; }).map(t => t.textContent) }; }""")
+    assert ergebnis["raus"] == []
+    assert ergebnis["klein"] >= 9  # Pixel – vorher ca. 7 auf Handybreite
