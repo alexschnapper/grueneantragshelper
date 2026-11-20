@@ -4,7 +4,7 @@
 
 [![GitHub Pages](https://github.com/alexschnapper/grueneantragshelper/actions/workflows/pages.yml/badge.svg)](https://github.com/alexschnapper/grueneantragshelper/actions/workflows/pages.yml)
 ![Python](https://img.shields.io/badge/python-3.9%2B-blue)
-![Lizenz](https://img.shields.io/badge/lizenz-GPL--3.0-green)
+![Lizenz](https://img.shields.io/badge/lizenz-AGPL--3.0-green)
 ![Status](https://img.shields.io/badge/status-MVP-orange)
 
 👉 **Online ansehen:** <https://alexschnapper.github.io/grueneantragshelper/>
@@ -31,6 +31,8 @@
 | 🕒 **Aktivität** | Aktivitäts-Protokoll, nach Antrag gruppiert und aufklappbar |
 | 👀 **Beobachten** | Anträge in der Sammelphase per Direktlink beobachten, inklusive Verlauf |
 | 🔍 **Transparenz** | Jeder Abruf bei antraege.gruene.de mit Zeitpunkt, Zweck und Größe; Laufprotokoll mit Anlass; im Footer letzter Abruf und nächste geplante Prüfung |
+
+![So funktioniert der Antragshelper: Quelle, schonender Abruf, Auswertung, Ausgabe](docs/ueberblick.svg)
 
 **Datenschutz:** Es werden **keine Namen** von Antragsteller*innen oder Unterstützer*innen ausgelesen oder
 gespeichert – nur Kürzel, Titel, Links und Zahlen. Damit klar ist, worum es geht (gerade bei mehreren
@@ -81,9 +83,10 @@ Konfiguration über Umgebungsvariablen:
 | `ANTRAGSHELPER_CONSULTATION` | `52bdk` |
 | `ANTRAGSHELPER_DB` | `data/antragshelper.sqlite3` |
 
-Die Antragsfristen für die Hochrechnung stehen je Konferenz in `FRISTEN` in
-[`antragshelper/config.py`](antragshelper/config.py) (für `52bdk`: Anträge 09.10.2026, Änderungsanträge
-13.11.2026, jeweils 11:59 Uhr). Für eine andere Konferenz (Landes-, Bezirksparteitag,
+Die Antragsfristen für die Hochrechnung stehen je Konferenz in
+[`antragshelper/fristen.json`](antragshelper/fristen.json) (für `52bdk`: Anträge 09.10.2026, Änderungsanträge
+13.11.2026, jeweils 11:59 Uhr). Welche Zeiten und Schwellen die App sonst noch verwendet und unter welchen
+Bedingungen, steht in [docs/fristen.md](docs/fristen.md). Für eine andere Konferenz (Landes-, Bezirksparteitag,
 Kreismitgliederversammlung) dort einen Eintrag mit ihrem Pfad ergänzen und `ANTRAGSHELPER_CONSULTATION`
 setzen. Ohne Eintrag zeigt die App das Tempo, aber keine Prognose.
 
@@ -223,4 +226,4 @@ sich Seitenaufbau und Texte ablesen ließen – gäbe es dieses Projekt nicht.
 
 ## 📄 Lizenz
 
-[GPL-3.0](LICENSE). Beiträge, Hinweise und Issues sind willkommen.
+[AGPL-3.0](LICENSE) (siehe [Erklärung mit Diagramm](docs/lizenz.md)). Beiträge, Hinweise und Issues sind willkommen.

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import dataclass, field
 from datetime import datetime
@@ -20,16 +21,22 @@ class Fristen:
         return self.antraege
 
 
-# Fristen je Konferenz-Pfad (`ANTRAGSHELPER_CONSULTATION`) für die Hochrechnung. Sie stehen auf der
-# Startseite nur als Freitext und werden deshalb hier gepflegt. Für weitere Parteitage, LDKs oder
-# Kreismitgliederversammlungen einen Eintrag ergänzen; ohne Eintrag gibt es keine Prognose.
-FRISTEN: Dict[str, Fristen] = {
-    # https://antraege.gruene.de/52bdk – Dringlichkeitsanträge (20.11., 03.12.) sind nicht abgebildet
-    "52bdk": Fristen(
-        antraege=datetime(2026, 10, 9, 11, 59),
-        aenderungsantraege=datetime(2026, 11, 13, 11, 59),
-    ),
-}
+def lade_fristen(pfad: Path = Path(__file__).with_name("fristen.json")) -> Dict[str, Fristen]:
+    """Liest die Fristen je Konferenz-Pfad (`ANTRAGSHELPER_CONSULTATION`) aus `fristen.json`.
+
+    Sie stehen auf der Startseite nur als Freitext und werden deshalb dort gepflegt (Erklärung:
+    docs/fristen.md). Für weitere Parteitage, LDKs oder Kreismitgliederversammlungen einen Eintrag
+    ergänzen; ohne Eintrag gibt es keine Prognose.
+    """
+    daten = json.loads(pfad.read_text(encoding="utf-8"))
+    return {
+        pfad_name: Fristen(*(datetime.fromisoformat(eintrag[feld]) if eintrag.get(feld) else None
+                             for feld in ("antraege", "aenderungsantraege")))
+        for pfad_name, eintrag in daten.items() if not pfad_name.startswith("_")
+    }
+
+
+FRISTEN: Dict[str, Fristen] = lade_fristen()
 
 
 @dataclass(frozen=True)

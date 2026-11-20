@@ -60,7 +60,7 @@ Wer auf antraege.gruene.de einen Antrag einreichen will, braucht Mitantragstelle
 
 Technisch: Python, serverseitig gerenderte Diagramme, statische Seite auf GitHub Pages. Eine stündliche Prüfung mit einem einzigen Abruf entscheidet, ob neu gebaut wird – jeder Abruf ist auf einer Transparenzseite einsehbar. Namen werden nicht gespeichert.
 
-Open Source (GPL-3.0): https://github.com/alexschnapper/grueneantragshelper
+Open Source (AGPL-3.0): https://github.com/alexschnapper/grueneantragshelper
 
 Inoffizielles Projekt, keine Anwendung von BÜNDNIS 90/DIE GRÜNEN, MVP ohne Gewähr. Danke an die Entwickler*innen von Antragsgrün. Bild und Text KI-generiert.
 

@@ -1,0 +1,10 @@
+{
+  "_lies_mich": "Antragsfristen je Konferenz für die Hochrechnung (Erklärung: docs/fristen.md). Schlüssel = Pfad der Konferenz (ANTRAGSHELPER_CONSULTATION). Zeiten sind lokale deutsche Zeit (ohne Zeitzone), Format JJJJ-MM-TTTHH:MM. Ohne Eintrag gibt es keine Prognose. Felder mit Unterstrich sind nur Erklärung und werden nicht ausgewertet.",
+  "52bdk": {
+    "_name": "52. Bundesdelegiertenkonferenz (BDK)",
+    "_quelle": "https://antraege.gruene.de/52bdk",
+    "antraege": "2026-10-09T11:59",
+    "aenderungsantraege": "2026-11-13T11:59",
+    "_hinweis": "Dringlichkeitsanträge (20.11., 03.12.) sind nicht abgebildet. Die Fristen stehen auf der Startseite nur als Freitext."
+  }
+}

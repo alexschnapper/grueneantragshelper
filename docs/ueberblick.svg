@@ -1,0 +1,84 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 440" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <title id="t">So funktioniert der Antragshelper</title>
+  <desc id="d">Öffentliche Seiten von antraege.gruene.de werden schonend abgerufen, ausgewertet und als Seiten, Listen und Dashboard ausgegeben. Anträge in der Sammelphase kommen nur über Direktlinks hinein. Es werden keine Namen gespeichert.</desc>
+  <style>
+    :root { --bg:#ffffff; --fg:#1d2b22; --muted:#55645a; --box:#f1f5f2; --line:#8a9a8f; --ok:#1b7a3d; --okbg:#e3f3e8; --accent:#46962b; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#14201a; --fg:#e8f0ea; --muted:#a6b5aa; --box:#1f2e25; --line:#6f8276; --ok:#6fd08c; --okbg:#1c3a27; --accent:#7fcf5f; }
+    }
+    .bg { fill:var(--bg); }
+    text { fill:var(--fg); font-size:15px; }
+    .h { font-size:19px; font-weight:700; }
+    .m { fill:var(--muted); font-size:14px; }
+    .b { font-weight:700; }
+    .box { fill:var(--box); stroke:var(--line); stroke-width:1.5; }
+    .ok { fill:var(--okbg); stroke:var(--ok); stroke-width:2; }
+    .okt { fill:var(--ok); font-weight:700; }
+    .num { fill:var(--accent); }
+    .numt { fill:#ffffff; font-weight:700; font-size:14px; }
+    .arr { stroke:var(--line); stroke-width:2; fill:none; marker-end:url(#a); }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8a9a8f"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="920" height="440"/>
+
+  <text class="h" x="16" y="34">So funktioniert der Antragshelper</text>
+
+  <!-- 1 Quelle -->
+  <rect class="box" x="16" y="56" width="195" height="140" rx="8"/>
+  <circle class="num" cx="40" cy="80" r="12"/><text class="numt" x="40" y="85" text-anchor="middle">1</text>
+  <text class="b" x="60" y="85">Quelle</text>
+  <text class="m" x="113" y="116" text-anchor="middle">antraege.gruene.de</text>
+  <text class="m" x="113" y="138" text-anchor="middle">öffentlich, ohne Login:</text>
+  <text class="m" x="113" y="158" text-anchor="middle">Tagesordnung, Aktivitäts-</text>
+  <text class="m" x="113" y="177" text-anchor="middle">Protokoll, Antragsseiten</text>
+  <path class="arr" d="M211 126 H243"/>
+
+  <!-- 2 Abruf -->
+  <rect class="box" x="247" y="56" width="195" height="140" rx="8"/>
+  <circle class="num" cx="271" cy="80" r="12"/><text class="numt" x="271" y="85" text-anchor="middle">2</text>
+  <text class="b" x="291" y="85">Schonender Abruf</text>
+  <text class="m" x="344" y="116" text-anchor="middle">stündliche Prüfung,</text>
+  <text class="m" x="344" y="138" text-anchor="middle">Neubau nur bei Änderung,</text>
+  <text class="m" x="344" y="158" text-anchor="middle">jeder Abruf mit Zweck</text>
+  <text class="m" x="344" y="177" text-anchor="middle">protokolliert</text>
+  <path class="arr" d="M442 126 H474"/>
+
+  <!-- 3 Auswertung -->
+  <rect class="box" x="478" y="56" width="195" height="140" rx="8"/>
+  <circle class="num" cx="502" cy="80" r="12"/><text class="numt" x="502" y="85" text-anchor="middle">3</text>
+  <text class="b" x="522" y="85">Auswertung</text>
+  <text class="m" x="575" y="116" text-anchor="middle">Quorum-Rechnung,</text>
+  <text class="m" x="575" y="138" text-anchor="middle">fehlende Unterstützer*innen,</text>
+  <text class="m" x="575" y="158" text-anchor="middle">Trend mit Ampel,</text>
+  <text class="m" x="575" y="177" text-anchor="middle">Statistik</text>
+  <path class="arr" d="M673 126 H705"/>
+
+  <!-- 4 Ausgabe -->
+  <rect class="box" x="709" y="56" width="195" height="140" rx="8"/>
+  <circle class="num" cx="733" cy="80" r="12"/><text class="numt" x="733" y="85" text-anchor="middle">4</text>
+  <text class="b" x="753" y="85">Ausgabe</text>
+  <text class="m" x="806" y="116" text-anchor="middle">Suche, Antragsseiten,</text>
+  <text class="m" x="806" y="138" text-anchor="middle">Listen, Dashboard,</text>
+  <text class="m" x="806" y="158" text-anchor="middle">Verlauf, Transparenz,</text>
+  <text class="m" x="806" y="177" text-anchor="middle">Teilen und Sharepic</text>
+
+  <!-- Direktlink -->
+  <rect class="box" x="16" y="226" width="195" height="64" rx="8"/>
+  <text class="b" x="113" y="254" text-anchor="middle">Direktlink</text>
+  <text class="m" x="113" y="274" text-anchor="middle">aus der Beobachtungsliste</text>
+  <path class="arr" d="M211 258 H344 V200"/>
+  <text class="m" x="370" y="250">Anträge in der Sammelphase sind öffentlich nirgends</text>
+  <text class="m" x="370" y="270">gelistet. Sie kommen nur über ihren Direktlink hinein.</text>
+
+  <!-- Datenschutz -->
+  <rect class="ok" x="16" y="320" width="888" height="76" rx="8"/>
+  <text class="okt" x="32" y="348">Datenschutz</text>
+  <text class="m" x="32" y="371">Keine Namen, nur Kürzel, Titel, Links und Zahlen. Antragstext und Begründung nur als kurzer</text>
+  <text class="m" x="32" y="388">Auszug (höchstens 15 Wörter), der nicht gespeichert wird.</text>
+
+  <text class="m" x="16" y="424">Inoffizielles Projekt, verbindlich ist ausschließlich antraege.gruene.de.</text>
+</svg>

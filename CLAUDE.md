@@ -20,7 +20,7 @@ python3 -m venv .venv && .venv/bin/pip install -e '.[dev]'   # setup (Python >= 
 .venv/bin/python -m antragshelper check --vorher <URL|stand.json>   # prints changed=true|false
 ```
 
-Env vars: `ANTRAGSHELPER_BASE_URL`, `ANTRAGSHELPER_CONSULTATION` (default `52bdk`), `ANTRAGSHELPER_DB` (default `data/antragshelper.sqlite3`, gitignored). Deadlines for the trend live in `FRISTEN` in `config.py`, keyed by consultation path (they are free text on the start page, so not parsed); add an entry per new conference.
+Env vars: `ANTRAGSHELPER_BASE_URL`, `ANTRAGSHELPER_CONSULTATION` (default `52bdk`), `ANTRAGSHELPER_DB` (default `data/antragshelper.sqlite3`, gitignored). Deadlines for the trend live in `antragshelper/fristen.json` (loaded into `config.FRISTEN`), keyed by consultation path (they are free text on the start page, so not parsed); add an entry per new conference. `docs/fristen.md` explains all time rules and thresholds; `tests/test_fristen_doku.py` keeps it in sync with the code.
 
 ## Architecture
 
@@ -54,4 +54,4 @@ CI: `.github/workflows/tests.yml` runs `pytest` and `pytest -m ui` on every PR a
 - Never extract or persist person names (initiators, supporters, activity log actors, feed authors); tests assert this (`"Muster" not in repr(...)`).
 - Motion text and reason only as short display excerpts (`parsers.kuerzen`, max `AUSZUG_WOERTER` = 15 words; for amendments the change itself from `.onlyChangedText`), never persisted (not in SQLite, not in `stand.json`). Changed deliberately on 2026-11-12: motions are publicly readable and amendments to the same motion were indistinguishable otherwise.
 - Test fixtures in `tests/fixtures/` are hand-written, anonymized imitations of the real markup. Do not commit real downloaded pages (they contain names).
-- License GPL-3.0; dependencies must be compatible.
+- License AGPL-3.0-or-later (switched from GPL-3.0; sole author, see `docs/lizenz.md`). The footer link to the repo ({{ settings.repo_url }}) is the §13 source offer for the hosted site — keep it. Dependencies must be compatible.
