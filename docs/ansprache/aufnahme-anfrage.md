@@ -112,7 +112,7 @@ Bei Änderungsanträgen „Antrag“ ruhig durch „Änderungsantrag“ ersetzen
 
 - **Zeitpunkt:** Am besten anfragen, sobald die Sammelphase beginnt, spätestens etwa 3 Tage vor dem
   Antragsschluss. Die Ampel erscheint erst nach 12 Stunden Verlauf; kurz vor Schluss helfen nur noch
-  Zahlen, Aufruftexte und Sharepic. Die Fristen stehen in `FRISTEN` in `antragshelper/config.py`.
+  Zahlen, Aufruftexte und Sharepic. Die Fristen stehen in `antragshelper/fristen.json` (Erklärung: [docs/fristen.md](../fristen.md)).
 - Messenger-Benachrichtigungen werden bewusst nicht erwähnt, solange sie nicht eingerichtet sind.
 - **Nach dem Ja:** Link mit Kommentar „Veröffentlichung freigegeben (Datum)“ in `beobachtet.txt`
   eintragen, ohne Namen. `main` ist geschützt: in GitHub die Datei bearbeiten und „Create a new branch …

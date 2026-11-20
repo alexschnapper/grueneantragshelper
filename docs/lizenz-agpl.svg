@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 600" role="img" aria-labelledby="t d" font-family="system-ui, -apple-system, 'Segoe UI', sans-serif">
+  <title id="t">GPL-3.0 und AGPL-3.0 im Vergleich</title>
+  <desc id="d">Oben: Bei der GPL muss ein als Webdienst betriebener Fork seinen Quellcode nicht offenlegen, bei der AGPL schon. Unten: Der Antragshelper liest nur öffentliche Seiten von Antragsgrün und übernimmt keinen Code.</desc>
+  <style>
+    :root { --bg:#ffffff; --fg:#1d2b22; --muted:#55645a; --box:#f1f5f2; --line:#8a9a8f; --ok:#1b7a3d; --okbg:#e3f3e8; --no:#a8321f; --nobg:#fbe9e5; --accent:#46962b; }
+    @media (prefers-color-scheme: dark) {
+      :root { --bg:#14201a; --fg:#e8f0ea; --muted:#a6b5aa; --box:#1f2e25; --line:#6f8276; --ok:#6fd08c; --okbg:#1c3a27; --no:#ff9a86; --nobg:#42221c; --accent:#7fcf5f; }
+    }
+    .bg { fill:var(--bg); }
+    text { fill:var(--fg); font-size:15px; }
+    .h { font-size:19px; font-weight:700; }
+    .m { fill:var(--muted); font-size:14px; }
+    .b { font-weight:700; }
+    .box { fill:var(--box); stroke:var(--line); stroke-width:1.5; }
+    .ok { fill:var(--okbg); stroke:var(--ok); stroke-width:2; }
+    .no { fill:var(--nobg); stroke:var(--no); stroke-width:2; }
+    .okt { fill:var(--ok); font-weight:700; }
+    .not { fill:var(--no); font-weight:700; }
+    .arr { stroke:var(--line); stroke-width:2; fill:none; marker-end:url(#a); }
+    .dash { stroke:var(--no); stroke-width:2; stroke-dasharray:6 5; fill:none; }
+    .pill { fill:var(--accent); }
+    .pillt { fill:#ffffff; font-weight:700; font-size:14px; }
+  </style>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto">
+      <path d="M0 0 L10 5 L0 10 z" fill="#8a9a8f"/>
+    </marker>
+  </defs>
+  <rect class="bg" width="920" height="600"/>
+
+  <!-- Teil 1 -->
+  <text class="h" x="20" y="34">1 · Was ist der Unterschied zwischen GPL und AGPL?</text>
+  <text class="m" x="20" y="58">Beispiel: Jemand ändert den Code und betreibt ihn als Webdienst für andere.</text>
+
+  <!-- GPL-Zeile -->
+  <rect class="box" x="20" y="76" width="110" height="90" rx="8"/>
+  <text class="b" x="75" y="127" text-anchor="middle">GPL-3.0</text>
+  <rect class="box" x="150" y="76" width="160" height="90" rx="8"/>
+  <text x="230" y="116" text-anchor="middle">Fork mit</text><text x="230" y="136" text-anchor="middle">Änderungen</text>
+  <path class="arr" d="M310 121 H338"/>
+  <rect class="box" x="340" y="76" width="160" height="90" rx="8"/>
+  <text x="420" y="116" text-anchor="middle">läuft als</text><text x="420" y="136" text-anchor="middle">Webdienst</text>
+  <path class="arr" d="M500 121 H528"/>
+  <rect class="box" x="530" y="76" width="170" height="90" rx="8"/>
+  <text x="615" y="116" text-anchor="middle">Nutzer*innen</text><text x="615" y="136" text-anchor="middle">im Browser</text>
+  <rect class="no" x="720" y="76" width="180" height="90" rx="8"/>
+  <text class="not" x="810" y="104" text-anchor="middle">✗ Keine Pflicht</text>
+  <text class="m" x="810" y="126" text-anchor="middle">Änderungen dürfen</text>
+  <text class="m" x="810" y="145" text-anchor="middle">geheim bleiben</text>
+
+  <!-- AGPL-Zeile -->
+  <rect class="box" x="20" y="186" width="110" height="90" rx="8"/>
+  <text class="b" x="75" y="237" text-anchor="middle">AGPL-3.0</text>
+  <rect class="box" x="150" y="186" width="160" height="90" rx="8"/>
+  <text x="230" y="226" text-anchor="middle">Fork mit</text><text x="230" y="246" text-anchor="middle">Änderungen</text>
+  <path class="arr" d="M310 231 H338"/>
+  <rect class="box" x="340" y="186" width="160" height="90" rx="8"/>
+  <text x="420" y="226" text-anchor="middle">läuft als</text><text x="420" y="246" text-anchor="middle">Webdienst</text>
+  <path class="arr" d="M500 231 H528"/>
+  <rect class="box" x="530" y="186" width="170" height="90" rx="8"/>
+  <text x="615" y="226" text-anchor="middle">Nutzer*innen</text><text x="615" y="246" text-anchor="middle">im Browser</text>
+  <rect class="ok" x="720" y="186" width="180" height="90" rx="8"/>
+  <text class="okt" x="810" y="212" text-anchor="middle">✓ Quellcode-Pflicht</text>
+  <text class="m" x="810" y="234" text-anchor="middle">Nutzer*innen müssen</text>
+  <text class="m" x="810" y="253" text-anchor="middle">den Code erhalten (§13)</text>
+
+  <text class="m" x="20" y="304">Sonst identisch: Copyleft, Patentklausel, Kompatibilität. GPLv3-Code darf mit AGPLv3-Code kombiniert werden.</text>
+
+  <line x1="20" y1="326" x2="900" y2="326" stroke="var(--line)" stroke-width="1" opacity=".5"/>
+
+  <!-- Teil 2 -->
+  <text class="h" x="20" y="360">2 · Wie hängt das mit Antragsgrün zusammen?</text>
+
+  <rect class="box" x="20" y="386" width="260" height="110" rx="8"/>
+  <text class="b" x="150" y="418" text-anchor="middle">Antragsgrün</text>
+  <text class="m" x="150" y="441" text-anchor="middle">Software hinter</text>
+  <text class="m" x="150" y="460" text-anchor="middle">antraege.gruene.de</text>
+  <rect class="pill" x="95" y="468" width="110" height="22" rx="11"/>
+  <text class="pillt" x="150" y="484" text-anchor="middle">AGPL-3.0</text>
+
+  <path class="arr" d="M280 441 H358"/>
+  <text class="m" x="319" y="428" text-anchor="middle">öffentlich</text>
+  <text class="m" x="319" y="466" text-anchor="middle">lesend</text>
+
+  <rect class="box" x="360" y="386" width="260" height="110" rx="8"/>
+  <text class="b" x="490" y="418" text-anchor="middle">Antragshelper</text>
+  <text class="m" x="490" y="441" text-anchor="middle">eigener Code, liest nur</text>
+  <text class="m" x="490" y="460" text-anchor="middle">Seiten aus (Scraping)</text>
+  <rect class="pill" x="435" y="468" width="110" height="22" rx="11"/>
+  <text class="pillt" x="490" y="484" text-anchor="middle">AGPL-3.0</text>
+
+
+  <rect class="ok" x="650" y="386" width="250" height="110" rx="8"/>
+  <text class="okt" x="775" y="414" text-anchor="middle">Kein Code übernommen</text>
+  <text class="m" x="775" y="438" text-anchor="middle">Abgerufene Seiten sind Daten,</text>
+  <text class="m" x="775" y="457" text-anchor="middle">kein kopierter Quellcode:</text>
+  <text class="m" x="775" y="476" text-anchor="middle">freie Lizenzwahl.</text>
+
+  <text class="m" x="20" y="528">Der Wechsel auf AGPL passt zum Ökosystem (Antragsgrün ist selbst AGPL) und schließt die Lücke für gehostete Forks.</text>
+  <text class="m" x="20" y="550">Der Link „Quellcode auf GitHub“ im Footer jeder Seite erfüllt die Quellcode-Angebotspflicht für die gehostete Seite.</text>
+  <text class="m" x="20" y="580">Keine Rechtsberatung.</text>
+</svg>

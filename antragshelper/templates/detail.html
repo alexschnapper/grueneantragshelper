@@ -88,7 +88,7 @@
       {% elif trend.tempo.seit_beginn %}Tempo seit Beginn der Beobachtung ({{ '%.0f'|format(trend.tempo.stunden) }} Std.).
       {% else %}Tempo der letzten {{ '%.0f'|format(trend.tempo.stunden) }} Stunden.{% endif %}
       {% if not trend.frist %}Ohne Frist keine Prognose: Für „{{ settings.consultation }}“ ist kein Antragsschluss
-        hinterlegt (<code>FRISTEN</code> in <code>antragshelper/config.py</code>).{% endif %}</p>
+        hinterlegt (<code>antragshelper/fristen.json</code>).{% endif %}</p>
     {% endif %}
 
     {% if verlauf_chart %}
